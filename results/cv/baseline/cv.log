@@ -1,0 +1,17 @@
+[baseline] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": true, "epochs": 60, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 0, "freeze_epochs": 0, "size": 224}
+[baseline] seed 42 fold 0: auc 0.842 | t=0.5 acc 0.795 f1 0.846 | t=0.31 acc 0.692 f1 0.793 | best epoch 2/17 in 12 s
+[baseline] seed 42 fold 1: auc 0.901 | t=0.5 acc 0.811 f1 0.837 | t=0.29 acc 0.838 f1 0.870 | best epoch 19/34 in 19 s
+[baseline] seed 42 fold 2: auc 0.983 | t=0.5 acc 0.927 f1 0.936 | t=0.59 acc 0.927 f1 0.936 | best epoch 24/39 in 22 s
+[baseline] seed 42 fold 3: auc 0.972 | t=0.5 acc 0.854 f1 0.880 | t=0.68 acc 0.854 f1 0.875 | best epoch 34/49 in 27 s
+[baseline] seed 42 fold 4: auc 0.943 | t=0.5 acc 0.861 f1 0.898 | t=0.70 acc 0.889 f1 0.917 | best epoch 24/39 in 22 s
+[baseline] seed 43 fold 0: auc 0.905 | t=0.5 acc 0.816 f1 0.851 | t=0.63 acc 0.842 f1 0.870 | best epoch 20/35 in 20 s
+[baseline] seed 43 fold 1: auc 0.933 | t=0.5 acc 0.850 f1 0.870 | t=0.15 acc 0.850 f1 0.880 | best epoch 7/22 in 12 s
+[baseline] seed 43 fold 2: auc 0.960 | t=0.5 acc 0.825 f1 0.868 | t=0.28 acc 0.825 f1 0.877 | best epoch 14/29 in 16 s
+[baseline] seed 43 fold 3: auc 0.773 | t=0.5 acc 0.725 f1 0.766 | t=0.40 acc 0.750 f1 0.792 | best epoch 8/23 in 13 s
+[baseline] seed 43 fold 4: auc 0.938 | t=0.5 acc 0.861 f1 0.884 | t=0.14 acc 0.833 f1 0.885 | best epoch 7/22 in 13 s
+[baseline] seed 44 fold 0: auc 0.949 | t=0.5 acc 0.868 f1 0.902 | t=0.12 acc 0.737 f1 0.828 | best epoch 6/21 in 12 s
+[baseline] seed 44 fold 1: auc 0.902 | t=0.5 acc 0.846 f1 0.875 | t=0.02 acc 0.641 f1 0.767 | best epoch 9/24 in 14 s
+[baseline] seed 44 fold 2: auc 0.947 | t=0.5 acc 0.872 f1 0.902 | t=0.44 acc 0.897 f1 0.923 | best epoch 29/44 in 19 s
+[baseline] seed 44 fold 3: auc 0.878 | t=0.5 acc 0.825 f1 0.844 | t=0.48 acc 0.825 f1 0.851 | best epoch 12/27 in 11 s
+[baseline] seed 44 fold 4: auc 0.933 | t=0.5 acc 0.868 f1 0.894 | t=0.66 acc 0.868 f1 0.889 | best epoch 27/42 in 18 s
+[baseline] saved 15 runs to results/cv/baseline/folds.csv and 582 predictions to oof.csv

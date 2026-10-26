@@ -1,0 +1,28 @@
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Config: {"arch": "resnet18", "pretrained": true, "epochs": 60, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 0, "freeze_epochs": 0, "size": 224}
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+epoch   1 | train loss 0.5203 acc 0.575 | val loss 0.4371 acc 0.794 auc 0.773 *
+epoch   2 | train loss 0.3420 acc 0.819 | val loss 0.3750 acc 0.794 auc 0.883 *
+epoch   3 | train loss 0.2162 acc 0.900 | val loss 0.4732 acc 0.765 auc 0.872
+epoch   4 | train loss 0.1561 acc 0.931 | val loss 0.5086 acc 0.794 auc 0.923
+epoch   5 | train loss 0.1079 acc 0.950 | val loss 0.3492 acc 0.853 auc 0.960 *
+epoch   6 | train loss 0.0641 acc 0.975 | val loss 0.2608 acc 0.853 auc 0.960 *
+epoch   7 | train loss 0.0567 acc 0.975 | val loss 0.2066 acc 0.912 auc 0.971 *
+epoch   8 | train loss 0.0254 acc 0.994 | val loss 0.1928 acc 0.912 auc 0.971 *
+epoch   9 | train loss 0.0262 acc 0.994 | val loss 0.2010 acc 0.912 auc 0.967
+epoch  10 | train loss 0.0214 acc 0.994 | val loss 0.2320 acc 0.853 auc 0.949
+epoch  11 | train loss 0.0202 acc 1.000 | val loss 0.2392 acc 0.853 auc 0.949
+epoch  12 | train loss 0.0119 acc 1.000 | val loss 0.2293 acc 0.824 auc 0.963
+epoch  13 | train loss 0.0067 acc 1.000 | val loss 0.2226 acc 0.824 auc 0.960
+epoch  14 | train loss 0.0184 acc 0.994 | val loss 0.2922 acc 0.853 auc 0.952
+epoch  15 | train loss 0.0139 acc 1.000 | val loss 0.3536 acc 0.853 auc 0.934
+epoch  16 | train loss 0.0080 acc 1.000 | val loss 0.3908 acc 0.853 auc 0.923
+epoch  17 | train loss 0.0099 acc 1.000 | val loss 0.3902 acc 0.853 auc 0.919
+epoch  18 | train loss 0.0058 acc 1.000 | val loss 0.3749 acc 0.853 auc 0.919
+epoch  19 | train loss 0.0064 acc 1.000 | val loss 0.3575 acc 0.853 auc 0.930
+epoch  20 | train loss 0.0038 acc 1.000 | val loss 0.3513 acc 0.853 auc 0.930
+epoch  21 | train loss 0.0040 acc 1.000 | val loss 0.3439 acc 0.853 auc 0.934
+epoch  22 | train loss 0.0042 acc 1.000 | val loss 0.3381 acc 0.853 auc 0.938
+epoch  23 | train loss 0.0094 acc 1.000 | val loss 0.3389 acc 0.853 auc 0.938
+Early stopping: no val loss improvement for 15 epochs
+Best epoch 8 (val loss 0.1928); trained in 11 s; checkpoint: results/final/baseline/model.pt

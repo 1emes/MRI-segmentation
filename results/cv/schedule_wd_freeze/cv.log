@@ -1,0 +1,17 @@
+[schedule_wd_freeze] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": true, "epochs": 25, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": 0.001, "weight_decay": 0.05, "warmup_epochs": 2, "freeze_epochs": 3, "size": 224}
+[schedule_wd_freeze] seed 42 fold 0: auc 0.603 | t=0.5 acc 0.641 f1 0.696 | t=0.35 acc 0.564 f1 0.721 | best epoch 3/18 in 13 s
+[schedule_wd_freeze] seed 42 fold 1: auc 0.929 | t=0.5 acc 0.838 f1 0.857 | t=0.10 acc 0.865 f1 0.898 | best epoch 25/25 in 14 s
+[schedule_wd_freeze] seed 42 fold 2: auc 0.936 | t=0.5 acc 0.780 f1 0.836 | t=0.79 acc 0.878 f1 0.884 | best epoch 8/23 in 13 s
+[schedule_wd_freeze] seed 42 fold 3: auc 0.982 | t=0.5 acc 0.927 f1 0.946 | t=0.86 acc 0.780 f1 0.791 | best epoch 23/25 in 14 s
+[schedule_wd_freeze] seed 42 fold 4: auc 0.930 | t=0.5 acc 0.861 f1 0.898 | t=0.24 acc 0.861 f1 0.898 | best epoch 16/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 0: auc 0.875 | t=0.5 acc 0.842 f1 0.880 | t=0.37 acc 0.816 f1 0.863 | best epoch 13/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 1: auc 0.957 | t=0.5 acc 0.825 f1 0.851 | t=0.29 acc 0.850 f1 0.885 | best epoch 14/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 2: auc 0.939 | t=0.5 acc 0.825 f1 0.868 | t=0.26 acc 0.825 f1 0.873 | best epoch 22/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 3: auc 0.844 | t=0.5 acc 0.800 f1 0.833 | t=0.20 acc 0.775 f1 0.836 | best epoch 21/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 4: auc 0.941 | t=0.5 acc 0.861 f1 0.902 | t=0.52 acc 0.861 f1 0.902 | best epoch 10/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 0: auc 0.979 | t=0.5 acc 0.921 f1 0.939 | t=0.17 acc 0.763 f1 0.842 | best epoch 6/21 in 12 s
+[schedule_wd_freeze] seed 44 fold 1: auc 0.948 | t=0.5 acc 0.872 f1 0.894 | t=0.02 acc 0.692 f1 0.793 | best epoch 14/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 2: auc 0.911 | t=0.5 acc 0.897 f1 0.923 | t=0.68 acc 0.846 f1 0.880 | best epoch 11/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 3: auc 0.901 | t=0.5 acc 0.875 f1 0.898 | t=0.17 acc 0.850 f1 0.885 | best epoch 11/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 4: auc 0.919 | t=0.5 acc 0.895 f1 0.913 | t=0.69 acc 0.868 f1 0.884 | best epoch 10/25 in 14 s
+[schedule_wd_freeze] saved 15 runs to results/cv/schedule_wd_freeze/folds.csv and 582 predictions to oof.csv

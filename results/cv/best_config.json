@@ -1,0 +1,5 @@
+{
+  "config": "schedule_wd",
+  "rule": "highest mean ROC AUC over all folds and seeds",
+  "mean_roc_auc": 0.9226866666666668
+}

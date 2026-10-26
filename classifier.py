@@ -6,10 +6,12 @@ The positive class is "yes" (tumor). ImageFolder sorts classes alphabetically, s
 from __future__ import annotations
 import os
 import random
+from typing import List
 import numpy as np
 import torch
+from PIL import Image
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, models, transforms
 
 ARCHS = ("resnet18", "simplecnn")
@@ -40,6 +42,9 @@ class SimpleCNN(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.head(self.features(x)).squeeze(1)
 
+    def head_module(self) -> nn.Module:
+        return self.head
+
 
 class ResNet18Binary(nn.Module):
     """ResNet-18 (optionally ImageNet-pretrained) with a single-logit head."""
@@ -52,6 +57,9 @@ class ResNet18Binary(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.backbone(x).squeeze(1)
+
+    def head_module(self) -> nn.Module:
+        return self.backbone.fc
 
 
 def build_model(arch: str, pretrained: bool = True) -> nn.Module:
@@ -76,11 +84,38 @@ def get_transforms(train: bool, size: int = 224) -> transforms.Compose:
     return transforms.Compose(steps + [transforms.ToTensor(), transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD)])
 
 
+class FileListDataset(Dataset):
+    """Images given as paths relative to `root`, with their 0/1 labels (used by the cross-validation)."""
+
+    def __init__(self, root: str, files: List[str], labels: List[int], transform=None) -> None:
+        self.samples = [(os.path.join(root, f), int(y)) for f, y in zip(files, labels)]
+        self.targets = [y for _, y in self.samples]
+        self.transform = transform
+
+    def __len__(self) -> int:
+        return len(self.samples)
+
+    def __getitem__(self, i: int):
+        path, y = self.samples[i]
+        img = Image.open(path).convert("RGB")
+        return (self.transform(img) if self.transform else img), y
+
+
 def make_loader(data_dir: str, split: str, train: bool, batch_size: int, size: int = 224,
                 num_workers: int = 2, seed: int = 42) -> DataLoader:
     """Loads <data_dir>/<split>/{no,yes} as grayscale-in-RGB images (ImageFolder converts to RGB)."""
     dataset = datasets.ImageFolder(os.path.join(data_dir, split), transform=get_transforms(train, size))
     assert dataset.classes == ["no", "yes"], f"Unexpected classes: {dataset.classes}"
+    return wrap_loader(dataset, train, batch_size, num_workers, seed)
+
+
+def make_file_loader(root: str, files: List[str], labels: List[int], train: bool, batch_size: int,
+                     size: int = 224, num_workers: int = 2, seed: int = 42) -> DataLoader:
+    dataset = FileListDataset(root, files, labels, transform=get_transforms(train, size))
+    return wrap_loader(dataset, train, batch_size, num_workers, seed)
+
+
+def wrap_loader(dataset: Dataset, train: bool, batch_size: int, num_workers: int, seed: int) -> DataLoader:
     generator = torch.Generator().manual_seed(seed)
     return DataLoader(dataset, batch_size=batch_size, shuffle=train, num_workers=num_workers,
                       pin_memory=torch.cuda.is_available(), generator=generator,
@@ -119,3 +154,11 @@ def predict(model: nn.Module, loader: DataLoader, device: torch.device):
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-x))
+
+
+def select_threshold(y: np.ndarray, p: np.ndarray, min_recall: float = 0.95) -> float:
+    """Highest threshold that keeps recall >= min_recall on (y, p), i.e. the most specific one under
+    that sensitivity constraint. Meant to be fitted on the validation split, never on the test split."""
+    pos = np.sort(p[y == 1])
+    allowed_misses = int(np.floor((1.0 - min_recall) * len(pos) + 1e-9))
+    return float(pos[allowed_misses])

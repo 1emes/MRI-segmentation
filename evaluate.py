@@ -6,6 +6,10 @@ usage: python evaluate.py --checkpoint results/resnet18/model.pt --data_dir data
 Writes metrics.json (accuracy, precision, recall, specificity, F1 and ROC AUC, each with a
 95% bootstrap confidence interval), confusion_matrix.png, roc_curve.png and predictions.csv
 next to the checkpoint (or to --output_dir).
+
+--threshold val picks the decision threshold on the validation split (the highest one that keeps
+recall >= --min_recall there) and only then applies it to --split; --suffix keeps both reports apart:
+    python evaluate.py -c results/X/model.pt --threshold val --suffix _valthr
 """
 from __future__ import annotations
 import os
@@ -20,7 +24,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import (accuracy_score, confusion_matrix, ConfusionMatrixDisplay, f1_score,
                              precision_score, recall_score, roc_auc_score, roc_curve)
 
-from classifier import build_model, get_device, make_loader, predict, sigmoid
+from classifier import build_model, get_device, make_loader, predict, select_threshold, sigmoid
 
 
 def compute_metrics(y: np.ndarray, p: np.ndarray, threshold: float) -> dict:
@@ -77,7 +81,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--data_dir", "-d", default="data/processed", help="Output of preprocess.py")
     p.add_argument("--split", default="test", choices=("train", "val", "test"), help="Split (default: test)")
     p.add_argument("--output_dir", "-o", default=None, help="Output directory (default: checkpoint folder)")
-    p.add_argument("--threshold", type=float, default=0.5, help="Decision threshold (default: 0.5)")
+    p.add_argument("--threshold", default="0.5",
+                   help="Decision threshold, or 'val' to pick it on the validation split (default: 0.5)")
+    p.add_argument("--min_recall", type=float, default=0.95,
+                   help="Recall the 'val' threshold must keep on the validation split (default: 0.95)")
+    p.add_argument("--suffix", default="", help="Suffix for the output file names (e.g. _valthr)")
     p.add_argument("--n_boot", type=int, default=2000, help="Bootstrap resamples (default: 2000)")
     p.add_argument("--seed", type=int, default=42, help="Bootstrap seed (default: 42)")
     return p.parse_args()
@@ -95,37 +103,44 @@ def main() -> None:
     loader = make_loader(args.data_dir, args.split, False, batch_size=64, size=ckpt["size"], num_workers=0)
     y, logits = predict(model, loader, device)
     p = sigmoid(logits)
-    pred = (p >= args.threshold).astype(int)
+    if args.threshold == "val":
+        val_loader = make_loader(args.data_dir, "val", False, batch_size=64, size=ckpt["size"], num_workers=0)
+        val_y, val_logits = predict(model, val_loader, device)
+        threshold = select_threshold(val_y, sigmoid(val_logits), args.min_recall)
+    else:
+        threshold = float(args.threshold)
+    pred = (p >= threshold).astype(int)
 
-    metrics = {k: float(v) for k, v in compute_metrics(y, p, args.threshold).items()}
-    ci = bootstrap_ci(y, p, args.threshold, args.n_boot, args.seed)
+    metrics = {k: float(v) for k, v in compute_metrics(y, p, threshold).items()}
+    ci = bootstrap_ci(y, p, threshold, args.n_boot, args.seed)
     tn, fp, fn, tp = confusion_matrix(y, pred, labels=[0, 1]).ravel()
     report = {
         "arch": ckpt["arch"],
         "split": args.split,
         "n_images": int(len(y)),
         "n_tumor": int(y.sum()),
-        "threshold": args.threshold,
+        "threshold": threshold,
+        "threshold_rule": f"val split, recall >= {args.min_recall}" if args.threshold == "val" else "fixed",
         "best_epoch": ckpt["epoch"],
         "metrics": metrics,
         "ci95": ci,
         "confusion_matrix": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
     }
-    with open(os.path.join(output_dir, "metrics.json"), "w") as f:
+    with open(os.path.join(output_dir, f"metrics{args.suffix}.json"), "w") as f:
         json.dump(report, f, indent=2)
 
-    title = f"{ckpt['arch']} - {args.split} ({len(y)} images)"
-    plot_confusion(y, pred, title, os.path.join(output_dir, "confusion_matrix.png"))
-    plot_roc(y, p, metrics["roc_auc"], title, os.path.join(output_dir, "roc_curve.png"))
+    title = f"{ckpt['arch']} - {args.split} ({len(y)} images, threshold {threshold:.2f})"
+    plot_confusion(y, pred, title, os.path.join(output_dir, f"confusion_matrix{args.suffix}.png"))
+    plot_roc(y, p, metrics["roc_auc"], title, os.path.join(output_dir, f"roc_curve{args.suffix}.png"))
 
     files = [os.path.relpath(path, os.path.join(args.data_dir, args.split)) for path, _ in loader.dataset.samples]
-    with open(os.path.join(output_dir, "predictions.csv"), "w", newline="") as f:
+    with open(os.path.join(output_dir, f"predictions{args.suffix}.csv"), "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["file", "label", "prob_tumor", "pred"])
         for row in zip(files, y, p, pred):
             writer.writerow([row[0], int(row[1]), f"{row[2]:.4f}", int(row[3])])
 
-    print(f"{title}, threshold {args.threshold}")
+    print(title)
     for k, v in metrics.items():
         print(f"  {k:<12} {v:.3f}  (95% CI {ci[k][0]:.3f}-{ci[k][1]:.3f})")
     print(f"  confusion    TN={tn} FP={fp} FN={fn} TP={tp}")
