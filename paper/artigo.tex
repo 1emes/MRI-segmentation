@@ -45,7 +45,7 @@ A ressonância magnética é o principal exame de imagem para detectar e acompan
 
 Os conjuntos públicos mais acessíveis, porém, são pequenos e podem conter a mesma imagem mais de uma vez; nesse caso, a divisão aleatória coloca cópias de um exame no treino e no teste, e o desempenho relatado fica inflado por vazamento de dados~\cite{kapoor2023leakage}. Em uma revisão de estudos de CNN para classificação da doença de Alzheimer por RM, Wen \textit{et al.}~\cite{wen2020alzheimer} apontaram que mais da metade pode ter sofrido vazamento de dados.
 
-Este trabalho avalia uma ResNet-18~\cite{he2016resnet} com e sem pré-treino e quatro configurações de treino, com deduplicação, divisão por grupos de quase-duplicatas e teste usado uma única vez, ao final. São investigadas três questões de pesquisa:
+Este trabalho avalia uma ResNet-18~\cite{he2016resnet} com e sem pré-treino e quatro configurações de treino, com deduplicação, divisão por grupos de quase-duplicatas e teste reservado para a avaliação final. São investigadas três questões de pesquisa:
 \begin{itemize}
 \item \textbf{QP1:} o pré-treino no ImageNet melhora a ResNet-18 em relação à mesma rede com inicialização aleatória e o mesmo treinamento?
 \item \textbf{QP2:} ajustes de agendamento da taxa de aprendizado, \textit{weight decay} e congelamento inicial produzem ganho consistente de AUC na validação cruzada por grupos?
@@ -107,7 +107,7 @@ Aplicaram-se filtro gaussiano $5\times5$, limiarização em 45, erosão e dilata
 
 As redes têm uma saída única (\textit{logit}), com a sigmoide aplicada dentro da perda, e toda a rede é ajustada. A ResNet-18 do torchvision teve a última camada substituída por \textit{dropout} e uma camada linear e foi treinada em duas versões, que diferem apenas na inicialização: com pesos do ImageNet (\texttt{baseline}) e aleatória (\texttt{baseline\_scratch}), com arquitetura, hiperparâmetros, sementes e \textit{folds} idênticos. A CNN simples, com quatro blocos de duas convoluções $3\times3$, \textit{batch normalization}, ReLU e \textit{max pooling} (32 a 256 canais), é uma referência adicional, com outra arquitetura e taxa de aprendizado.
 
-A partir do \texttt{baseline}, três configurações alteram a anterior (Tabela~\ref{tab:configs}): \texttt{schedule} encurta o horizonte do cosseno de 60 para 25 épocas e acrescenta \textit{warmup}; \texttt{schedule\_wd} aumenta o \textit{weight decay}; e \texttt{schedule\_wd\_freeze} treina só a cabeça nas três primeiras épocas, com taxa dez vezes maior. A motivação foi que, no \texttt{baseline}, o treino parou na época 23 com a taxa de aprendizado ainda em 96\% do valor inicial. Como algumas transições mudam mais de um fator, as diferenças não são atribuídas a um fator isolado.
+A partir do \texttt{baseline}, três configurações alteram a anterior (Tabela~\ref{tab:configs}): \texttt{schedule} encurta o horizonte do cosseno de 60 para 25 épocas e acrescenta \textit{warmup}; \texttt{schedule\_wd} aumenta o \textit{weight decay}; e \texttt{schedule\_wd\_freeze} treina só a cabeça nas três primeiras épocas, com taxa dez vezes maior. A motivação foi que, no \texttt{baseline}, o treino foi interrompido na época 23, mas o melhor modelo foi obtido na época 8, quando a taxa de aprendizado ainda correspondia a aproximadamente 97\% do valor inicial. Como algumas transições mudam mais de um fator, as diferenças não são atribuídas a um fator isolado.
 
 \begin{table}[t]
 \centering
@@ -171,11 +171,18 @@ VN / FP / FN / VP & 0 / 13 / 0 / 21 & 11 / 2 / 1 / 20 & 7 / 6 / 3 / 18 & 7 / 6 /
 \end{tabular}
 \end{table*}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.72\textwidth]{fig_test.pdf}
+\caption{Matrizes de confusão e curvas ROC no conjunto de teste, nunca usado em treino, seleção de modelo ou escolha de limiar.}
+\label{fig:test}
+\end{figure*}
+
 \subsection{Avaliação e inferência}
 
-As configurações foram comparadas por validação cruzada usando só as 194 imagens de treino e validação. Para cada semente (42, 43 e 44), as imagens foram divididas em 5 \textit{folds} com \texttt{StratifiedGroupKFold}~\cite{pedregosa2011sklearn}, que preserva a proporção das classes e mantém cada grupo em um único \textit{fold}. Em cada \textit{fold}, o modelo treina em quatro partes, com validação interna por grupos (15\%, 23 a 25 imagens) para a parada antecipada e o limiar, e é avaliado na quinta (36 a 41 imagens). As 15 execuções usam as mesmas sementes e \textit{folds} em todas as configurações; as diferenças pareadas de AUC em relação ao \texttt{baseline} recebem o IC 95\% do teste $t$ corrigido de Nadeau e Bengio~\cite{nadeau2003inference}, tratado como exploratório.
+As configurações foram comparadas por validação cruzada usando só as 194 imagens de treino e validação. Para cada semente (42, 43 e 44), as imagens foram divididas em 5 \textit{folds} com \texttt{StratifiedGroupKFold}~\cite{pedregosa2011sklearn}, que preserva a proporção das classes e mantém cada grupo em um único \textit{fold}. Em cada \textit{fold}, o modelo treina em quatro partes, com validação interna por grupos (15\%, 23 a 25 imagens) para a parada antecipada e o limiar, e é avaliado na quinta (36 a 41 imagens). As 15 execuções usam as mesmas sementes e \textit{folds} em todas as configurações; as diferenças pareadas de AUC em relação ao \texttt{baseline} recebem o IC 95\% do teste $t$ corrigido de Nadeau e Bengio~\cite{nadeau2003inference}, tratado como exploratório: $\bar d \pm t_{0{,}975;\,14}\,s\sqrt{1/15 + n_2/n_1}$, com média $\bar d$ e desvio $s$ das 15 diferenças e $n_2/n_1 = 38{,}8/155{,}2 = 0{,}25$, razão entre as médias de imagens avaliadas e de ajuste (treino e validação interna) por \textit{fold}.
 
-O \texttt{baseline}, a configuração vencedora e o controle foram retreinados na divisão original e avaliados uma única vez no teste. As proporções recebem IC 95\% de Wilson~\cite{brown2001interval}, que permanece informativo quando não há erros de um tipo, e a AUC, IC por \textit{bootstrap} (2.000 reamostragens)~\cite{efron1993bootstrap}; os pares de modelos são comparados pelo teste exato de McNemar sobre as imagens em que discordam. O teste tem 34 imagens em 32 grupos, de modo que a dependência entre imagens é pequena, mas não nula. Hiperparâmetros, épocas e limiares foram definidos sem acesso ao teste. Código, divisão e predições estão em \url{https://github.com/1emes/MRI-segmentation}.
+O \texttt{baseline}, a configuração vencedora e o controle foram retreinados na divisão original e avaliados uma única vez no teste. As proporções recebem IC 95\% de Wilson~\cite{brown2001interval}, que permanece informativo quando não há erros de um tipo, e a AUC, IC por \textit{bootstrap} (2.000 reamostragens)~\cite{efron1993bootstrap}; os pares de modelos são comparados pelo teste exato de McNemar sobre as imagens em que discordam. O teste contém 34 imagens distribuídas em 32 grupos de \textit{hash}; esses grupos não permitem determinar a dependência entre imagens do mesmo paciente. Hiperparâmetros, épocas, limiares e a configuração foram escolhidos sem acesso ao teste, mas ele foi consultado em três etapas: experimento inicial (ResNet-18 pré-treinada e CNN simples), \texttt{baseline} e configuração vencedora e, por último, controle aleatório, acrescentado com os resultados anteriores já conhecidos; as comparações no teste são, portanto, exploratórias. Código, divisão e predições estão em \url{https://github.com/1emes/MRI-segmentation}.
 
 
 
@@ -185,7 +192,7 @@ O \texttt{baseline}, a configuração vencedora e o controle foram retreinados n
 
 \subsection{Efeito do pré-treino (QP1)}
 
-Com arquitetura e treinamento idênticos, a inicialização aleatória reduziu a AUC média na validação cruzada de 0,917 para 0,744 (Tabela~\ref{tab:cv}): a diferença pareada foi de $-0{,}173$, com IC 95\% corrigido $[-0{,}299;\,-0{,}047]$, e o \texttt{baseline} venceu as 15 execuções. A especificidade caiu de 0,796 para 0,633. No teste (Tabela~\ref{tab:test}), o \texttt{baseline} errou 3 das 34 imagens e o \texttt{baseline\_scratch}, 9; nas 6 imagens em que discordaram, só o \texttt{baseline} acertou (McNemar exato, $p=0{,}031$). O controle ficou próximo da CNN simples (AUC 0,766 e 0,733; $p=1{,}0$), que também treina do zero com outra arquitetura.
+Com arquitetura e treinamento idênticos, a inicialização aleatória reduziu a AUC média na validação cruzada de 0,917 para 0,744 (Tabela~\ref{tab:cv}): a diferença pareada foi de $-0{,}173$, com IC 95\% corrigido $[-0{,}299;\,-0{,}047]$, e o \texttt{baseline} venceu as 15 execuções. A especificidade caiu de 0,796 para 0,633. No teste (Tabela~\ref{tab:test}), o \texttt{baseline} errou 3 das 34 imagens e o \texttt{baseline\_scratch}, 9; nas 6 imagens em que discordaram, só o \texttt{baseline} acertou (McNemar exato, $p=0{,}031$). O controle ficou no patamar da CNN simples, que também treina do zero com outra arquitetura: AUCs de 0,766 e 0,733, respectivamente, sem diferença detectada nas proporções de erro (McNemar exato, $p=1{,}0$), o que não demonstra equivalência.
 
 
 
@@ -201,22 +208,17 @@ No \texttt{baseline}, o limiar escolhido na validação interna elevou a sensibi
 
 Retreinada na divisão original, a configuração \texttt{schedule\_wd} errou uma das 34 imagens de teste, um tumor que o \texttt{baseline} também não detectou (Tabela~\ref{tab:test} e Fig.~\ref{fig:test}). As predições das duas diferiram em duas imagens rotuladas como sem tumor, ambas acertadas só por \texttt{schedule\_wd}, o que não constitui evidência de diferença (McNemar exato, $p=0{,}5$). Os limiares escolhidos na validação (0,646 e 0,422) não alteraram nenhuma predição de teste.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.8\textwidth]{fig_test.pdf}
-\caption{Matrizes de confusão e curvas ROC no conjunto de teste, nunca usado em treino, seleção de modelo ou escolha de limiar.}
-\label{fig:test}
-\end{figure*}
+
 
 \section{Discussão e Ameaças à Validade}
 
-Para a QP1, o pré-treino no ImageNet foi o fator que mais pesou no desempenho, no protocolo avaliado: com arquitetura, hiperparâmetros, sementes e \textit{folds} idênticos, a rede pré-treinada superou a aleatória em todas as execuções da validação cruzada e no teste. A CNN simples, treinada do zero com outra arquitetura, ficou no patamar da ResNet-18 aleatória.
+Para a QP1, o pré-treino no ImageNet foi o fator que mais pesou no desempenho, no protocolo avaliado: com arquitetura, hiperparâmetros, sementes e \textit{folds} idênticos, a rede pré-treinada superou a aleatória em todas as execuções da validação cruzada e no teste.
 
 Para a QP2, não foi detectada diferença consistente de AUC entre as configurações pré-treinadas, considerando o tamanho da amostra e a incerteza das estimativas; isso não demonstra equivalência, pois os intervalos admitem diferenças relevantes em ambos os sentidos. No teste, a vantagem de \texttt{schedule\_wd} sobre o \texttt{baseline} se resume a duas imagens.
 
-Para a QP3, o limiar ajustado proporcionou pequeno ganho de sensibilidade, acompanhado de perda expressiva de especificidade e de elevada variabilidade entre \textit{folds}; atingir sensibilidade $\ge0{,}95$ em 23 a 25 imagens de validação não garante o mesmo desempenho em imagens novas. A estimativa mais confiável do desempenho esperado é a da validação cruzada (AUC próxima de 0,92), e não a do teste.
+Para a QP3, o limiar ajustado proporcionou pequeno ganho de sensibilidade, acompanhado de perda expressiva de especificidade e de elevada variabilidade entre \textit{folds}; atingir sensibilidade $\ge0{,}95$ em 23 a 25 imagens de validação não garante o mesmo desempenho em imagens novas. A validação cruzada (AUC próxima de 0,92) resume o desempenho em múltiplas partições, embora permaneça sujeita às limitações do conjunto e do agrupamento.
 
-\textit{Validade interna e estatística.} O IC corrigido de Nadeau e Bengio atenua, mas não resolve por completo, o efeito da dependência entre execuções, e por isso é tratado como exploratório. O controle aleatório usou os hiperparâmetros escolhidos para \textit{fine-tuning} (taxa $10^{-4}$, até 60 épocas); em 4 dos 15 \textit{folds}, a melhor época ficou acima da 40ª, de modo que uma busca própria de hiperparâmetros poderia reduzir a diferença. O \textit{dHash} agrupa apenas quase-duplicatas com \textit{hash} idêntico.
+\textit{Validade interna e estatística.} O IC corrigido de Nadeau e Bengio atenua, mas não resolve por completo, o efeito da dependência entre execuções, e por isso é tratado como exploratório. O controle aleatório usou os hiperparâmetros escolhidos para \textit{fine-tuning} (taxa $10^{-4}$, até 60 épocas); em 4 dos 15 \textit{folds}, a melhor época ocorreu após a época 40, de modo que uma busca própria de hiperparâmetros poderia reduzir a diferença. O \textit{dHash} agrupa apenas quase-duplicatas com \textit{hash} idêntico.
 
 \textit{Validade de construção.} Sem identificação de paciente, não há garantia de que imagens do mesmo paciente fiquem na mesma partição, o que pode inflar todas as métricas. Os rótulos são os das pastas do conjunto, sem revisão por especialista, e não há tipo de tumor nem localização. As classes podem diferir em resolução, sequência e formato do arquivo, o que abre atalhos não relacionados ao tumor.
 
