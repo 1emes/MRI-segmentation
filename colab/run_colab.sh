@@ -5,6 +5,7 @@
 #
 # usage: colab/run_colab.sh [ARCH ...]             train + evaluate (default: resnet18 simplecnn)
 #        PIPELINE=cv colab/run_colab.sh            cross-validate configs.py, retrain the best one, evaluate
+#        PIPELINE=scratch colab/run_colab.sh       cross-validate, retrain and evaluate the baseline_scratch control
 # env:   COLAB_GPU (A100), SEED (42), EPOCHS (60, train only),
 #        CONFIGS ("baseline schedule schedule_wd schedule_wd_freeze"), CV_SEEDS ("42 43 44") and
 #        CV_ONLY (0; 1 skips the final retraining) for cv,
@@ -20,7 +21,11 @@ CV_SEEDS=${CV_SEEDS:-42 43 44}
 CKPT_DIR=${CKPT_DIR:-.}
 SESSION="mri-$(date +%m%d-%H%M%S)"
 TMP=$(mktemp -d)
-if [[ $PIPELINE == cv ]]; then LOG=results/cv/colab_run.log; else LOG=results/colab_run.log; fi
+case $PIPELINE in
+  cv) LOG=results/cv/colab_run.log ;;
+  scratch) LOG=results/cv_scratch/colab_run.log ;;
+  *) LOG=results/colab_run.log ;;
+esac
 mkdir -p "$(dirname "$LOG")"
 : > "$LOG"
 log() { echo "[$(date +%T)] $*" | tee -a "$LOG"; }
@@ -44,7 +49,11 @@ trap cleanup EXIT
 log "session ready in $(( $(date +%s) - T0 )) s"
 
 colab upload --session "$SESSION" "$TMP/mri.tar.gz" /content/mri.tar.gz >>"$LOG" 2>&1
-if [[ $PIPELINE == cv ]]; then log "running cv for: $CONFIGS (seeds $CV_SEEDS)"; else log "running pipeline for: $ARCHS"; fi
+case $PIPELINE in
+  cv) log "running cv for: $CONFIGS (seeds $CV_SEEDS)" ;;
+  scratch) log "running the baseline_scratch control (seeds $CV_SEEDS)" ;;
+  *) log "running pipeline for: $ARCHS" ;;
+esac
 colab exec --session "$SESSION" --timeout 5400 \
   --env PIPELINE="$PIPELINE" --env ARCHS="$ARCHS" --env CONFIGS="$CONFIGS" --env CV_SEEDS="$CV_SEEDS" \
   --env CV_ONLY="${CV_ONLY:-0}" \

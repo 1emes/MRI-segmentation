@@ -1,0 +1,27 @@
+{
+  "arch": "resnet18",
+  "config": "baseline_scratch",
+  "best_epoch": 17,
+  "best_val_loss": 0.3209804594516754,
+  "best_val_acc": 0.7352941176470589,
+  "best_val_auc": 0.9010989010989011,
+  "epochs_run": 32,
+  "train_seconds": 14.7,
+  "device": "NVIDIA A100-SXM4-80GB",
+  "params": 11177025,
+  "seed": 42,
+  "hyperparameters": {
+    "arch": "resnet18",
+    "pretrained": false,
+    "epochs": 60,
+    "patience": 15,
+    "batch_size": 32,
+    "lr": 0.0001,
+    "head_lr": null,
+    "weight_decay": 0.0001,
+    "warmup_epochs": 0,
+    "freeze_epochs": 0,
+    "size": 224
+  },
+  "checkpoints_every_epoch": false
+}

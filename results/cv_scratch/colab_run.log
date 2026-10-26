@@ -1,0 +1,145 @@
+[10:37:26] compute units before: 310.00
+[10:37:26] creating session mri-1026-103725 (A100)
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Creating session 'mri-1026-103725'...
+[colab] Session READY.
+[10:38:34] session ready in 68 s
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Uploaded '/tmp/tmp.pUDpDhPyDa/mri.tar.gz' to '/content/mri.tar.gz'
+[10:38:41] running the baseline_scratch control (seeds 42 43 44)
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+$ tar xzf /content/mri.tar.gz
+$ pip install -q -r requirements.txt
+$ mkdir -p results && nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv > results/colab_gpu.csv && python -c 'import torch, torchvision; print("torch", torch.__version__, "| torchvision", torchvision.__version__, "| CUDA", torch.version.cuda)' | tee results/colab_versions.txt && cat results/colab_gpu.csv
+torch 2.11.0+cu130 | torchvision 0.26.0+cu130 | CUDA 13.0
+name, memory.total [MiB], driver_version
+NVIDIA A100-SXM4-80GB, 81920 MiB, 580.82.07
+$ python preprocess.py --data_dir classification --output_dir data/processed --seed 42
+Found 253 images in classification
+Dropped 25 byte-identical copies
+228 unique files in 216 near-duplicate groups
+split    no  yes  total
+train    61   99    160
+val      13   21     34
+test     13   21     34
+Saved to data/processed
+$ cp data/processed/summary.json data/processed/splits.csv results/
+$ python cv.py --config baseline_scratch --seeds 42 43 44 --output_dir results/cv_scratch
+[baseline_scratch] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": false, "epochs": 60, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 0, "freeze_epochs": 0, "size": 224}
+[baseline_scratch] seed 42 fold 0: auc 0.785 | t=0.5 acc 0.718 f1 0.766 | t=0.29 acc 0.718 f1 0.800 | best epoch 9/24 in 13 s
+[baseline_scratch] seed 42 fold 1: auc 0.692 | t=0.5 acc 0.622 f1 0.682 | t=0.31 acc 0.730 f1 0.828 | best epoch 9/24 in 11 s
+[baseline_scratch] seed 42 fold 2: auc 0.779 | t=0.5 acc 0.634 f1 0.667 | t=0.30 acc 0.780 f1 0.830 | best epoch 43/58 in 26 s
+[baseline_scratch] seed 42 fold 3: auc 0.782 | t=0.5 acc 0.683 f1 0.723 | t=0.34 acc 0.756 f1 0.815 | best epoch 51/60 in 25 s
+[baseline_scratch] seed 42 fold 4: auc 0.739 | t=0.5 acc 0.750 f1 0.816 | t=0.15 acc 0.639 f1 0.772 | best epoch 25/40 in 18 s
+[baseline_scratch] seed 43 fold 0: auc 0.768 | t=0.5 acc 0.632 f1 0.667 | t=0.09 acc 0.763 f1 0.824 | best epoch 46/60 in 26 s
+[baseline_scratch] seed 43 fold 1: auc 0.634 | t=0.5 acc 0.600 f1 0.652 | t=0.37 acc 0.600 f1 0.692 | best epoch 33/48 in 20 s
+[baseline_scratch] seed 43 fold 2: auc 0.733 | t=0.5 acc 0.700 f1 0.727 | t=0.23 acc 0.625 f1 0.754 | best epoch 15/30 in 13 s
+[baseline_scratch] seed 43 fold 3: auc 0.766 | t=0.5 acc 0.700 f1 0.769 | t=0.53 acc 0.725 f1 0.784 | best epoch 32/47 in 20 s
+[baseline_scratch] seed 43 fold 4: auc 0.618 | t=0.5 acc 0.556 f1 0.652 | t=0.30 acc 0.639 f1 0.772 | best epoch 4/19 in 8 s
+[baseline_scratch] seed 44 fold 0: auc 0.934 | t=0.5 acc 0.842 f1 0.857 | t=0.02 acc 0.632 f1 0.767 | best epoch 28/43 in 19 s
+[baseline_scratch] seed 44 fold 1: auc 0.758 | t=0.5 acc 0.692 f1 0.760 | t=0.29 acc 0.769 f1 0.836 | best epoch 13/28 in 12 s
+[baseline_scratch] seed 44 fold 2: auc 0.642 | t=0.5 acc 0.538 f1 0.640 | t=0.38 acc 0.718 f1 0.825 | best epoch 5/20 in 9 s
+[baseline_scratch] seed 44 fold 3: auc 0.841 | t=0.5 acc 0.800 f1 0.833 | t=0.20 acc 0.750 f1 0.808 | best epoch 49/60 in 26 s
+[baseline_scratch] seed 44 fold 4: auc 0.693 | t=0.5 acc 0.658 f1 0.683 | t=0.29 acc 0.684 f1 0.727 | best epoch 25/40 in 18 s
+[baseline_scratch] saved 15 runs to results/cv_scratch/baseline_scratch/folds.csv and 582 predictions to oof.csv
+$ python cv.py --summarize results/cv_scratch
+| Config | ROC AUC | Accuracy (0.5) | F1 (0.5) | Recall (0.5) | Specificity (0.5) | Accuracy (val thr.) | F1 (val thr.) | Recall (val thr.) | Specificity (val thr.) | ΔAUC vs baseline (wins/ties/losses) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **baseline_scratch** | 0.744 ± 0.082 | 0.675 ± 0.084 | 0.726 ± 0.071 | 0.702 ± 0.101 | 0.633 ± 0.162 | 0.702 ± 0.060 | 0.789 ± 0.042 | 0.902 ± 0.087 | 0.364 ± 0.222 | - |
+Best config (highest mean ROC AUC): baseline_scratch
+$ python train.py --config baseline_scratch --seed 42 --num_workers 4 --output_dir results/final/baseline_scratch 
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Config: {"arch": "resnet18", "pretrained": false, "epochs": 60, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 0, "freeze_epochs": 0, "size": 224}
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+epoch   1 | train loss 0.5332 acc 0.519 | val loss 0.5242 acc 0.647 auc 0.619 *
+epoch   2 | train loss 0.4954 acc 0.619 | val loss 0.4990 acc 0.588 auc 0.758 *
+epoch   3 | train loss 0.4793 acc 0.656 | val loss 0.5332 acc 0.618 auc 0.593
+epoch   4 | train loss 0.5001 acc 0.631 | val loss 0.8257 acc 0.618 auc 0.824
+epoch   5 | train loss 0.4415 acc 0.719 | val loss 0.7782 acc 0.618 auc 0.777
+epoch   6 | train loss 0.4108 acc 0.700 | val loss 0.7696 acc 0.618 auc 0.791
+epoch   7 | train loss 0.3772 acc 0.769 | val loss 0.5646 acc 0.647 auc 0.747
+epoch   8 | train loss 0.3793 acc 0.725 | val loss 0.6661 acc 0.647 auc 0.901
+epoch   9 | train loss 0.3793 acc 0.756 | val loss 0.4986 acc 0.529 auc 0.747 *
+epoch  10 | train loss 0.3722 acc 0.762 | val loss 0.4028 acc 0.735 auc 0.894 *
+epoch  11 | train loss 0.3467 acc 0.781 | val loss 0.4254 acc 0.647 auc 0.832
+epoch  12 | train loss 0.3438 acc 0.800 | val loss 0.3738 acc 0.765 auc 0.846 *
+epoch  13 | train loss 0.2987 acc 0.831 | val loss 0.3838 acc 0.765 auc 0.850
+epoch  14 | train loss 0.2959 acc 0.844 | val loss 0.3927 acc 0.765 auc 0.857
+epoch  15 | train loss 0.3188 acc 0.794 | val loss 0.4327 acc 0.735 auc 0.879
+epoch  16 | train loss 0.3000 acc 0.794 | val loss 0.5514 acc 0.618 auc 0.780
+epoch  17 | train loss 0.2769 acc 0.831 | val loss 0.3210 acc 0.735 auc 0.901 *
+epoch  18 | train loss 0.2829 acc 0.831 | val loss 1.8064 acc 0.353 auc 0.700
+epoch  19 | train loss 0.2820 acc 0.831 | val loss 0.4672 acc 0.765 auc 0.802
+epoch  20 | train loss 0.2446 acc 0.900 | val loss 0.4636 acc 0.618 auc 0.747
+epoch  21 | train loss 0.2800 acc 0.869 | val loss 0.4459 acc 0.735 auc 0.857
+epoch  22 | train loss 0.2403 acc 0.850 | val loss 0.4266 acc 0.735 auc 0.875
+epoch  23 | train loss 0.2442 acc 0.844 | val loss 0.7202 acc 0.588 auc 0.703
+epoch  24 | train loss 0.2616 acc 0.856 | val loss 0.4403 acc 0.765 auc 0.868
+epoch  25 | train loss 0.2550 acc 0.850 | val loss 0.4989 acc 0.706 auc 0.839
+epoch  26 | train loss 0.2547 acc 0.844 | val loss 0.4593 acc 0.735 auc 0.861
+epoch  27 | train loss 0.1890 acc 0.887 | val loss 0.4321 acc 0.735 auc 0.832
+epoch  28 | train loss 0.1906 acc 0.875 | val loss 0.6581 acc 0.647 auc 0.780
+epoch  29 | train loss 0.1693 acc 0.906 | val loss 0.4570 acc 0.794 auc 0.853
+epoch  30 | train loss 0.1875 acc 0.900 | val loss 0.7160 acc 0.647 auc 0.678
+epoch  31 | train loss 0.1861 acc 0.906 | val loss 0.7849 acc 0.765 auc 0.777
+epoch  32 | train loss 0.1651 acc 0.925 | val loss 0.5824 acc 0.676 auc 0.762
+Early stopping: no val loss improvement for 15 epochs
+Best epoch 17 (val loss 0.3210); trained in 15 s; checkpoint: results/final/baseline_scratch/model.pt
+$ python evaluate.py --checkpoint results/final/baseline_scratch/model.pt --output_dir results/final/baseline_scratch --seed 42
+resnet18 - test (34 images, threshold 0.50)
+  accuracy     0.735  (95% CI 0.588-0.882)
+  precision    0.750  (95% CI 0.560-0.913)
+  recall       0.857  (95% CI 0.687-1.000)
+  specificity  0.538  (95% CI 0.250-0.818)
+  f1           0.800  (95% CI 0.649-0.909)
+  roc_auc      0.766  (95% CI 0.561-0.939)
+  confusion    TN=7 FP=6 FN=3 TP=18
+Saved to results/final/baseline_scratch
+$ python evaluate.py --checkpoint results/final/baseline_scratch/model.pt --output_dir results/final/baseline_scratch --seed 42 --threshold val --suffix _valthr
+resnet18 - test (34 images, threshold 0.39)
+  accuracy     0.765  (95% CI 0.618-0.882)
+  precision    0.741  (95% CI 0.565-0.897)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  0.462  (95% CI 0.188-0.734)
+  f1           0.833  (95% CI 0.700-0.931)
+  roc_auc      0.766  (95% CI 0.561-0.939)
+  confusion    TN=6 FP=7 FN=1 TP=20
+Saved to results/final/baseline_scratch
+$ tar czf results.tar.gz --exclude='*.pt' results
+$ find results -name '*.pt' | tar cf checkpoints.tar -T -
+REMOTE_DONE
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Downloaded '/content/mri/results.tar.gz' to '/tmp/tmp.pUDpDhPyDa/results.tar.gz'
+[10:44:47] results saved to results/
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Downloaded '/content/mri/checkpoints.tar' to '/tmp/tmp.pUDpDhPyDa/checkpoints.tar'
+[10:45:05] checkpoints (43M) saved under /home/lemes/models/MRI-segmentation/scratch-20261026/results/
+[10:45:05] stopping session mri-1026-103725
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Stopping session 'mri-1026-103725'...
+[colab] Session terminated.
+[10:45:08] compute units after: 309.65; session time 462 s

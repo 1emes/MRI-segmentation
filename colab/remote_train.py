@@ -9,6 +9,8 @@ data and then, depending on $PIPELINE:
            retrains "baseline" and the best config on train/val (the best one saving a checkpoint per
            epoch) and evaluates both on the test split with the 0.5 and the validation-chosen thresholds
            (CV_ONLY=1 stops after the summary)
+    scratch  cv.py for the baseline_scratch control (results/cv_scratch), then retrains it on train/val and
+             evaluates it on the test split, like the final runs of the cv pipeline
 
 Packs results/ (without checkpoints) into /content/mri/results.tar.gz and the checkpoints into
 /content/mri/checkpoints.tar.
@@ -96,6 +98,11 @@ elif PIPELINE == "cv":
         if best != "baseline":
             train_and_evaluate("baseline")
         train_and_evaluate(best, extra="--save_every_epoch")
+elif PIPELINE == "scratch":
+    run("python cv.py --config baseline_scratch --seeds {} --output_dir results/cv_scratch".format(CV_SEEDS),
+        log="results/cv_scratch/baseline_scratch/cv.log")
+    run("python cv.py --summarize results/cv_scratch", log="results/cv_scratch/summarize.log")
+    train_and_evaluate("baseline_scratch")
 else:
     raise ValueError(f"Unknown PIPELINE '{PIPELINE}'")
 
