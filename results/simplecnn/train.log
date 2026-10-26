@@ -1,0 +1,44 @@
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+epoch   1 | train loss 0.5934 acc 0.494 | val loss 0.5305 acc 0.382 auc 0.370 *
+epoch   2 | train loss 0.5130 acc 0.531 | val loss 0.5109 acc 0.559 auc 0.777 *
+epoch   3 | train loss 0.5072 acc 0.575 | val loss 0.4953 acc 0.618 auc 0.773 *
+epoch   4 | train loss 0.4982 acc 0.606 | val loss 0.5496 acc 0.618 auc 0.762
+epoch   5 | train loss 0.4924 acc 0.606 | val loss 0.5583 acc 0.618 auc 0.773
+epoch   6 | train loss 0.4818 acc 0.644 | val loss 0.5182 acc 0.647 auc 0.637
+epoch   7 | train loss 0.5021 acc 0.631 | val loss 0.4877 acc 0.647 auc 0.762 *
+epoch   8 | train loss 0.4469 acc 0.694 | val loss 0.5570 acc 0.559 auc 0.509
+epoch   9 | train loss 0.4870 acc 0.613 | val loss 0.5475 acc 0.588 auc 0.579
+epoch  10 | train loss 0.4706 acc 0.656 | val loss 0.5062 acc 0.735 auc 0.681
+epoch  11 | train loss 0.4651 acc 0.675 | val loss 0.5622 acc 0.559 auc 0.571
+epoch  12 | train loss 0.4845 acc 0.637 | val loss 0.5553 acc 0.588 auc 0.549
+epoch  13 | train loss 0.4547 acc 0.681 | val loss 0.6852 acc 0.382 auc 0.568
+epoch  14 | train loss 0.4448 acc 0.719 | val loss 0.6046 acc 0.441 auc 0.648
+epoch  15 | train loss 0.4478 acc 0.700 | val loss 0.8231 acc 0.382 auc 0.495
+epoch  16 | train loss 0.4314 acc 0.700 | val loss 0.5281 acc 0.588 auc 0.623
+epoch  17 | train loss 0.4410 acc 0.719 | val loss 0.4283 acc 0.735 auc 0.791 *
+epoch  18 | train loss 0.4466 acc 0.700 | val loss 0.9936 acc 0.441 auc 0.487
+epoch  19 | train loss 0.4525 acc 0.688 | val loss 0.4901 acc 0.647 auc 0.670
+epoch  20 | train loss 0.4292 acc 0.731 | val loss 0.4984 acc 0.588 auc 0.678
+epoch  21 | train loss 0.4037 acc 0.694 | val loss 0.7363 acc 0.382 auc 0.524
+epoch  22 | train loss 0.4381 acc 0.725 | val loss 0.4062 acc 0.706 auc 0.817 *
+epoch  23 | train loss 0.4191 acc 0.719 | val loss 0.6785 acc 0.471 auc 0.549
+epoch  24 | train loss 0.4360 acc 0.713 | val loss 0.6377 acc 0.471 auc 0.681
+epoch  25 | train loss 0.4137 acc 0.731 | val loss 0.3745 acc 0.735 auc 0.853 *
+epoch  26 | train loss 0.4029 acc 0.744 | val loss 0.6670 acc 0.471 auc 0.681
+epoch  27 | train loss 0.3913 acc 0.781 | val loss 0.8332 acc 0.471 auc 0.568
+epoch  28 | train loss 0.3794 acc 0.756 | val loss 0.4715 acc 0.559 auc 0.725
+epoch  29 | train loss 0.3757 acc 0.750 | val loss 0.4824 acc 0.647 auc 0.714
+epoch  30 | train loss 0.3904 acc 0.744 | val loss 0.5497 acc 0.618 auc 0.601
+epoch  31 | train loss 0.3696 acc 0.800 | val loss 0.6708 acc 0.529 auc 0.590
+epoch  32 | train loss 0.3885 acc 0.781 | val loss 0.6521 acc 0.529 auc 0.659
+epoch  33 | train loss 0.3670 acc 0.769 | val loss 0.4688 acc 0.676 auc 0.729
+epoch  34 | train loss 0.3514 acc 0.781 | val loss 0.6079 acc 0.559 auc 0.615
+epoch  35 | train loss 0.3628 acc 0.750 | val loss 0.5887 acc 0.529 auc 0.597
+epoch  36 | train loss 0.3609 acc 0.781 | val loss 0.7354 acc 0.471 auc 0.645
+epoch  37 | train loss 0.3393 acc 0.794 | val loss 1.0164 acc 0.412 auc 0.579
+epoch  38 | train loss 0.2968 acc 0.838 | val loss 0.3897 acc 0.735 auc 0.846
+epoch  39 | train loss 0.3246 acc 0.831 | val loss 0.4221 acc 0.676 auc 0.795
+epoch  40 | train loss 0.3219 acc 0.844 | val loss 0.7372 acc 0.500 auc 0.582
+Early stopping: no val loss improvement for 15 epochs
+Best epoch 25 (val loss 0.3745); trained in 19 s; checkpoint: results/simplecnn/model.pt

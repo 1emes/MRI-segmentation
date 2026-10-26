@@ -3,3 +3,6 @@ scikit-learn
 Pillow
 matplotlib
 opencv-python
+torch
+torchvision
+kagglehub

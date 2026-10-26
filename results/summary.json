@@ -1,0 +1,124 @@
+{
+  "source_images": 253,
+  "byte_identical_dropped": 25,
+  "unique_images": 228,
+  "near_duplicate_groups": 216,
+  "size": 224,
+  "seed": 42,
+  "counts": {
+    "train": {
+      "no": 61,
+      "yes": 99
+    },
+    "val": {
+      "no": 13,
+      "yes": 21
+    },
+    "test": {
+      "no": 13,
+      "yes": 21
+    }
+  },
+  "dropped": [
+    {
+      "file": "classification/no/27 no.jpg",
+      "copy_of": "classification/no/17 no.jpg"
+    },
+    {
+      "file": "classification/no/41 no.jpg",
+      "copy_of": "classification/no/40 no.jpg"
+    },
+    {
+      "file": "classification/no/42 no.jpg",
+      "copy_of": "classification/no/13 no.jpg"
+    },
+    {
+      "file": "classification/no/8 no.jpg",
+      "copy_of": "classification/no/38 no.jpg"
+    },
+    {
+      "file": "classification/no/9 no.jpg",
+      "copy_of": "classification/no/10 no.jpg"
+    },
+    {
+      "file": "classification/no/N5.jpg",
+      "copy_of": "classification/no/4 no.jpg"
+    },
+    {
+      "file": "classification/no/No17.jpg",
+      "copy_of": "classification/no/No15.jpg"
+    },
+    {
+      "file": "classification/no/no 1.jpg",
+      "copy_of": "classification/no/49 no.jpg"
+    },
+    {
+      "file": "classification/no/no 4.jpg",
+      "copy_of": "classification/no/N3.jpg"
+    },
+    {
+      "file": "classification/no/no 7.jpeg",
+      "copy_of": "classification/no/No11.jpg"
+    },
+    {
+      "file": "classification/no/no 94.jpg",
+      "copy_of": "classification/no/1 no.jpeg"
+    },
+    {
+      "file": "classification/yes/Y162.jpg",
+      "copy_of": "classification/yes/Y108.jpg"
+    },
+    {
+      "file": "classification/yes/Y169.jpg",
+      "copy_of": "classification/yes/Y13.jpg"
+    },
+    {
+      "file": "classification/yes/Y17.jpg",
+      "copy_of": "classification/yes/Y14.jpg"
+    },
+    {
+      "file": "classification/yes/Y181.jpg",
+      "copy_of": "classification/yes/Y15.jpg"
+    },
+    {
+      "file": "classification/yes/Y33.jpg",
+      "copy_of": "classification/yes/Y107.jpg"
+    },
+    {
+      "file": "classification/yes/Y34.jpg",
+      "copy_of": "classification/yes/Y15.jpg"
+    },
+    {
+      "file": "classification/yes/Y37.jpg",
+      "copy_of": "classification/yes/Y10.jpg"
+    },
+    {
+      "file": "classification/yes/Y38.jpg",
+      "copy_of": "classification/yes/Y30.jpg"
+    },
+    {
+      "file": "classification/yes/Y54.jpg",
+      "copy_of": "classification/yes/Y30.jpg"
+    },
+    {
+      "file": "classification/yes/Y62.jpg",
+      "copy_of": "classification/yes/Y31.jpg"
+    },
+    {
+      "file": "classification/yes/Y69.jpg",
+      "copy_of": "classification/yes/Y25.jpg"
+    },
+    {
+      "file": "classification/yes/Y70.jpg",
+      "copy_of": "classification/yes/Y30.jpg"
+    },
+    {
+      "file": "classification/yes/Y74.jpg",
+      "copy_of": "classification/yes/Y55.jpg"
+    },
+    {
+      "file": "classification/yes/Y79.jpg",
+      "copy_of": "classification/yes/Y154.jpg"
+    }
+  ]
+}

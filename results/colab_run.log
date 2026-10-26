@@ -1,0 +1,154 @@
+[08:37:54] compute units before: 311.75
+[08:37:54] creating session mri-1026-083753 (A100)
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Creating session 'mri-1026-083753'...
+[colab] Session READY.
+[08:37:58] session ready in 4 s
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Uploaded '/tmp/tmp.HL2zc3W3YF/mri.tar.gz' to '/content/mri.tar.gz'
+[08:38:06] running pipeline for: resnet18 simplecnn
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+$ tar xzf /content/mri.tar.gz
+$ pip install -q -r requirements.txt
+$ mkdir -p results && nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv > results/colab_gpu.csv && python -c 'import torch, torchvision; print("torch", torch.__version__, "| torchvision", torchvision.__version__, "| CUDA", torch.version.cuda)' | tee results/colab_versions.txt && cat results/colab_gpu.csv
+torch 2.11.0+cu130 | torchvision 0.26.0+cu130 | CUDA 13.0
+name, memory.total [MiB], driver_version
+NVIDIA A100-SXM4-80GB, 81920 MiB, 580.82.07
+$ python preprocess.py --data_dir classification --output_dir data/processed --seed 42
+Found 253 images in classification
+Dropped 25 byte-identical copies
+228 unique files in 216 near-duplicate groups
+split    no  yes  total
+train    61   99    160
+val      13   21     34
+test     13   21     34
+Saved to data/processed
+$ cp data/processed/summary.json data/processed/splits.csv results/
+$ python train.py --arch resnet18 --epochs 60 --seed 42 --num_workers 4 --output_dir results/resnet18
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /root/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
+
+  0%|          | 0.00/44.7M [00:00<?, ?B/s]
+ 51%|█████▏    | 23.0M/44.7M [00:00<00:00, 241MB/s]
+100%|██████████| 44.7M/44.7M [00:00<00:00, 244MB/s]
+epoch   1 | train loss 0.5203 acc 0.575 | val loss 0.4371 acc 0.794 auc 0.773 *
+epoch   2 | train loss 0.3420 acc 0.819 | val loss 0.3750 acc 0.794 auc 0.883 *
+epoch   3 | train loss 0.2162 acc 0.900 | val loss 0.4732 acc 0.765 auc 0.872
+epoch   4 | train loss 0.1561 acc 0.931 | val loss 0.5086 acc 0.794 auc 0.923
+epoch   5 | train loss 0.1079 acc 0.950 | val loss 0.3492 acc 0.853 auc 0.960 *
+epoch   6 | train loss 0.0641 acc 0.975 | val loss 0.2608 acc 0.853 auc 0.960 *
+epoch   7 | train loss 0.0567 acc 0.975 | val loss 0.2066 acc 0.912 auc 0.971 *
+epoch   8 | train loss 0.0254 acc 0.994 | val loss 0.1928 acc 0.912 auc 0.971 *
+epoch   9 | train loss 0.0262 acc 0.994 | val loss 0.2010 acc 0.912 auc 0.967
+epoch  10 | train loss 0.0214 acc 0.994 | val loss 0.2320 acc 0.853 auc 0.949
+epoch  11 | train loss 0.0202 acc 1.000 | val loss 0.2392 acc 0.853 auc 0.949
+epoch  12 | train loss 0.0119 acc 1.000 | val loss 0.2293 acc 0.824 auc 0.963
+epoch  13 | train loss 0.0067 acc 1.000 | val loss 0.2226 acc 0.824 auc 0.960
+epoch  14 | train loss 0.0184 acc 0.994 | val loss 0.2922 acc 0.853 auc 0.952
+epoch  15 | train loss 0.0139 acc 1.000 | val loss 0.3536 acc 0.853 auc 0.934
+epoch  16 | train loss 0.0080 acc 1.000 | val loss 0.3908 acc 0.853 auc 0.923
+epoch  17 | train loss 0.0099 acc 1.000 | val loss 0.3902 acc 0.853 auc 0.919
+epoch  18 | train loss 0.0058 acc 1.000 | val loss 0.3749 acc 0.853 auc 0.919
+epoch  19 | train loss 0.0064 acc 1.000 | val loss 0.3575 acc 0.853 auc 0.930
+epoch  20 | train loss 0.0038 acc 1.000 | val loss 0.3513 acc 0.853 auc 0.930
+epoch  21 | train loss 0.0040 acc 1.000 | val loss 0.3439 acc 0.853 auc 0.934
+epoch  22 | train loss 0.0042 acc 1.000 | val loss 0.3381 acc 0.853 auc 0.938
+epoch  23 | train loss 0.0094 acc 1.000 | val loss 0.3389 acc 0.853 auc 0.938
+Early stopping: no val loss improvement for 15 epochs
+Best epoch 8 (val loss 0.1928); trained in 13 s; checkpoint: results/resnet18/model.pt
+$ python evaluate.py --checkpoint results/resnet18/model.pt --output_dir results/resnet18 --seed 42
+resnet18 - test (34 images), threshold 0.5
+  accuracy     0.912  (95% CI 0.794-1.000)
+  precision    0.909  (95% CI 0.762-1.000)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  0.846  (95% CI 0.625-1.000)
+  f1           0.930  (95% CI 0.837-1.000)
+  roc_auc      0.971  (95% CI 0.902-1.000)
+  confusion    TN=11 FP=2 FN=1 TP=20
+Saved to results/resnet18
+$ python train.py --arch simplecnn --epochs 60 --seed 42 --num_workers 4 --output_dir results/simplecnn
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+epoch   1 | train loss 0.5934 acc 0.494 | val loss 0.5305 acc 0.382 auc 0.370 *
+epoch   2 | train loss 0.5130 acc 0.531 | val loss 0.5109 acc 0.559 auc 0.777 *
+epoch   3 | train loss 0.5072 acc 0.575 | val loss 0.4953 acc 0.618 auc 0.773 *
+epoch   4 | train loss 0.4982 acc 0.606 | val loss 0.5496 acc 0.618 auc 0.762
+epoch   5 | train loss 0.4924 acc 0.606 | val loss 0.5583 acc 0.618 auc 0.773
+epoch   6 | train loss 0.4818 acc 0.644 | val loss 0.5182 acc 0.647 auc 0.637
+epoch   7 | train loss 0.5021 acc 0.631 | val loss 0.4877 acc 0.647 auc 0.762 *
+epoch   8 | train loss 0.4469 acc 0.694 | val loss 0.5570 acc 0.559 auc 0.509
+epoch   9 | train loss 0.4870 acc 0.613 | val loss 0.5475 acc 0.588 auc 0.579
+epoch  10 | train loss 0.4706 acc 0.656 | val loss 0.5062 acc 0.735 auc 0.681
+epoch  11 | train loss 0.4651 acc 0.675 | val loss 0.5622 acc 0.559 auc 0.571
+epoch  12 | train loss 0.4845 acc 0.637 | val loss 0.5553 acc 0.588 auc 0.549
+epoch  13 | train loss 0.4547 acc 0.681 | val loss 0.6852 acc 0.382 auc 0.568
+epoch  14 | train loss 0.4448 acc 0.719 | val loss 0.6046 acc 0.441 auc 0.648
+epoch  15 | train loss 0.4478 acc 0.700 | val loss 0.8231 acc 0.382 auc 0.495
+epoch  16 | train loss 0.4314 acc 0.700 | val loss 0.5281 acc 0.588 auc 0.623
+epoch  17 | train loss 0.4410 acc 0.719 | val loss 0.4283 acc 0.735 auc 0.791 *
+epoch  18 | train loss 0.4466 acc 0.700 | val loss 0.9936 acc 0.441 auc 0.487
+epoch  19 | train loss 0.4525 acc 0.688 | val loss 0.4901 acc 0.647 auc 0.670
+epoch  20 | train loss 0.4292 acc 0.731 | val loss 0.4984 acc 0.588 auc 0.678
+epoch  21 | train loss 0.4037 acc 0.694 | val loss 0.7363 acc 0.382 auc 0.524
+epoch  22 | train loss 0.4381 acc 0.725 | val loss 0.4062 acc 0.706 auc 0.817 *
+epoch  23 | train loss 0.4191 acc 0.719 | val loss 0.6785 acc 0.471 auc 0.549
+epoch  24 | train loss 0.4360 acc 0.713 | val loss 0.6377 acc 0.471 auc 0.681
+epoch  25 | train loss 0.4137 acc 0.731 | val loss 0.3745 acc 0.735 auc 0.853 *
+epoch  26 | train loss 0.4029 acc 0.744 | val loss 0.6670 acc 0.471 auc 0.681
+epoch  27 | train loss 0.3913 acc 0.781 | val loss 0.8332 acc 0.471 auc 0.568
+epoch  28 | train loss 0.3794 acc 0.756 | val loss 0.4715 acc 0.559 auc 0.725
+epoch  29 | train loss 0.3757 acc 0.750 | val loss 0.4824 acc 0.647 auc 0.714
+epoch  30 | train loss 0.3904 acc 0.744 | val loss 0.5497 acc 0.618 auc 0.601
+epoch  31 | train loss 0.3696 acc 0.800 | val loss 0.6708 acc 0.529 auc 0.590
+epoch  32 | train loss 0.3885 acc 0.781 | val loss 0.6521 acc 0.529 auc 0.659
+epoch  33 | train loss 0.3670 acc 0.769 | val loss 0.4688 acc 0.676 auc 0.729
+epoch  34 | train loss 0.3514 acc 0.781 | val loss 0.6079 acc 0.559 auc 0.615
+epoch  35 | train loss 0.3628 acc 0.750 | val loss 0.5887 acc 0.529 auc 0.597
+epoch  36 | train loss 0.3609 acc 0.781 | val loss 0.7354 acc 0.471 auc 0.645
+epoch  37 | train loss 0.3393 acc 0.794 | val loss 1.0164 acc 0.412 auc 0.579
+epoch  38 | train loss 0.2968 acc 0.838 | val loss 0.3897 acc 0.735 auc 0.846
+epoch  39 | train loss 0.3246 acc 0.831 | val loss 0.4221 acc 0.676 auc 0.795
+epoch  40 | train loss 0.3219 acc 0.844 | val loss 0.7372 acc 0.500 auc 0.582
+Early stopping: no val loss improvement for 15 epochs
+Best epoch 25 (val loss 0.3745); trained in 19 s; checkpoint: results/simplecnn/model.pt
+$ python evaluate.py --checkpoint results/simplecnn/model.pt --output_dir results/simplecnn --seed 42
+simplecnn - test (34 images), threshold 0.5
+  accuracy     0.765  (95% CI 0.618-0.912)
+  precision    0.760  (95% CI 0.577-0.920)
+  recall       0.905  (95% CI 0.762-1.000)
+  specificity  0.538  (95% CI 0.250-0.800)
+  f1           0.826  (95% CI 0.683-0.931)
+  roc_auc      0.733  (95% CI 0.506-0.920)
+  confusion    TN=7 FP=6 FN=2 TP=19
+Saved to results/simplecnn
+$ tar czf results.tar.gz results
+REMOTE_DONE
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Downloaded '/content/mri/results.tar.gz' to '/tmp/tmp.HL2zc3W3YF/results.tar.gz'
+[08:40:10] results saved to results/
+[08:40:10] stopping session mri-1026-083753
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Stopping session 'mri-1026-083753'...
+[colab] Session terminated.
+[08:40:14] compute units after: 311.75; session time 140 s

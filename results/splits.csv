@@ -1,0 +1,229 @@
+split,label,file,source,group
+test,no,test/no/1_no.png,classification/no/1 no.jpeg,0
+train,no,train/no/10_no.png,classification/no/10 no.jpg,1
+train,no,train/no/11_no.png,classification/no/11 no.jpg,2
+train,no,train/no/12_no.png,classification/no/12 no.jpg,3
+val,no,val/no/13_no.png,classification/no/13 no.jpg,4
+train,no,train/no/14_no.png,classification/no/14 no.jpg,5
+train,no,train/no/15_no.png,classification/no/15 no.jpg,6
+val,no,val/no/17_no.png,classification/no/17 no.jpg,7
+train,no,train/no/18_no.png,classification/no/18 no.jpg,8
+train,no,train/no/19_no.png,classification/no/19 no.jpg,9
+train,no,train/no/2_no.png,classification/no/2 no.jpeg,10
+train,no,train/no/20_no.png,classification/no/20 no.jpg,11
+train,no,train/no/21_no.png,classification/no/21 no.jpg,12
+train,no,train/no/22_no.png,classification/no/22 no.jpg,13
+train,no,train/no/23_no.png,classification/no/23 no.jpg,14
+train,no,train/no/24_no.png,classification/no/24 no.jpg,15
+train,no,train/no/25_no.png,classification/no/25 no.jpg,16
+val,no,val/no/26_no.png,classification/no/26 no.jpg,17
+test,no,test/no/28_no.png,classification/no/28 no.jpg,18
+train,no,train/no/29_no.png,classification/no/29 no.jpg,19
+train,no,train/no/3_no.png,classification/no/3 no.jpg,20
+test,no,test/no/30_no.png,classification/no/30 no.jpg,21
+train,no,train/no/31_no.png,classification/no/31 no.jpg,22
+train,no,train/no/32_no.png,classification/no/32 no.jpg,23
+val,no,val/no/33_no.png,classification/no/33 no.jpg,24
+test,no,test/no/34_no.png,classification/no/34 no.jpg,25
+val,no,val/no/35_no.png,classification/no/35 no.jpg,26
+val,no,val/no/36_no.png,classification/no/36 no.jpg,27
+test,no,test/no/37_no.png,classification/no/37 no.jpg,28
+val,no,val/no/38_no.png,classification/no/38 no.jpg,29
+train,no,train/no/39_no.png,classification/no/39 no.jpg,30
+train,no,train/no/4_no.png,classification/no/4 no.jpg,31
+train,no,train/no/40_no.png,classification/no/40 no.jpg,32
+test,no,test/no/43_no.png,classification/no/43 no.jpg,33
+train,no,train/no/44no.png,classification/no/44no.jpg,34
+train,no,train/no/45_no.png,classification/no/45 no.jpg,35
+train,no,train/no/46_no.png,classification/no/46 no.jpg,36
+train,no,train/no/47_no.png,classification/no/47 no.jpg,10
+test,no,test/no/48_no.png,classification/no/48 no.jpeg,38
+test,no,test/no/49_no.png,classification/no/49 no.jpg,0
+train,no,train/no/5_no.png,classification/no/5 no.jpg,40
+train,no,train/no/50_no.png,classification/no/50 no.jpg,41
+test,no,test/no/6_no.png,classification/no/6 no.jpg,42
+train,no,train/no/7_no.png,classification/no/7 no.jpg,41
+train,no,train/no/N1.png,classification/no/N1.JPG,44
+test,no,test/no/N11.png,classification/no/N11.jpg,45
+train,no,train/no/N15.png,classification/no/N15.jpg,46
+train,no,train/no/N16.png,classification/no/N16.jpg,47
+train,no,train/no/N17.png,classification/no/N17.jpg,47
+train,no,train/no/N19.png,classification/no/N19.JPG,49
+train,no,train/no/N2.png,classification/no/N2.JPG,50
+train,no,train/no/N20.png,classification/no/N20.JPG,51
+train,no,train/no/N21.png,classification/no/N21.jpg,52
+train,no,train/no/N22.png,classification/no/N22.JPG,53
+test,no,test/no/N26.png,classification/no/N26.JPG,54
+val,no,val/no/N3.png,classification/no/N3.jpg,29
+train,no,train/no/N6.png,classification/no/N6.jpg,56
+train,no,train/no/No11.png,classification/no/No11.jpg,57
+train,no,train/no/No12.png,classification/no/No12.jpg,58
+train,no,train/no/No13.png,classification/no/No13.jpg,59
+train,no,train/no/No14.png,classification/no/No14.jpg,60
+val,no,val/no/No15.png,classification/no/No15.jpg,61
+train,no,train/no/No16.png,classification/no/No16.jpg,62
+val,no,val/no/No18.png,classification/no/No18.jpg,63
+test,no,test/no/No19.png,classification/no/No19.jpg,64
+test,no,test/no/No20.png,classification/no/No20.jpg,65
+train,no,train/no/No21.png,classification/no/No21.jpg,66
+val,no,val/no/No22.png,classification/no/No22.jpg,29
+train,no,train/no/no_10.png,classification/no/no 10.jpg,68
+train,no,train/no/no_100.png,classification/no/no 100.jpg,69
+train,no,train/no/no_2.png,classification/no/no 2.jpg,70
+train,no,train/no/no_3.png,classification/no/no 3.jpg,71
+train,no,train/no/no_5.png,classification/no/no 5.jpeg,72
+train,no,train/no/no_6.png,classification/no/no 6.jpg,73
+val,no,val/no/no_8.png,classification/no/no 8.jpg,4
+train,no,train/no/no_89.png,classification/no/no 89.jpg,75
+train,no,train/no/no_9.png,classification/no/no 9.png,76
+train,no,train/no/no_90.png,classification/no/no 90.jpg,3
+val,no,val/no/no_91.png,classification/no/no 91.jpeg,78
+train,no,train/no/no_92.png,classification/no/no 92.jpg,79
+train,no,train/no/no_923.png,classification/no/no 923.jpg,80
+train,no,train/no/no_95.png,classification/no/no 95.jpg,81
+train,no,train/no/no_96.png,classification/no/no 96.jpg,82
+train,no,train/no/no_97.png,classification/no/no 97.jpg,83
+train,no,train/no/no_98.png,classification/no/no 98.jpg,84
+train,no,train/no/no_99.png,classification/no/no 99.jpg,85
+train,no,train/no/no.png,classification/no/no.jpg,86
+train,yes,train/yes/Y1.png,classification/yes/Y1.jpg,87
+train,yes,train/yes/Y10.png,classification/yes/Y10.jpg,88
+train,yes,train/yes/Y100.png,classification/yes/Y100.JPG,89
+train,yes,train/yes/Y101.png,classification/yes/Y101.jpg,90
+train,yes,train/yes/Y102.png,classification/yes/Y102.jpg,91
+train,yes,train/yes/Y103.png,classification/yes/Y103.jpg,92
+test,yes,test/yes/Y104.png,classification/yes/Y104.jpg,93
+test,yes,test/yes/Y105.png,classification/yes/Y105.jpg,94
+train,yes,train/yes/Y106.png,classification/yes/Y106.jpg,95
+val,yes,val/yes/Y107.png,classification/yes/Y107.jpg,96
+train,yes,train/yes/Y108.png,classification/yes/Y108.jpg,97
+train,yes,train/yes/Y109.png,classification/yes/Y109.JPG,98
+train,yes,train/yes/Y11.png,classification/yes/Y11.jpg,99
+train,yes,train/yes/Y111.png,classification/yes/Y111.JPG,100
+train,yes,train/yes/Y112.png,classification/yes/Y112.JPG,101
+val,yes,val/yes/Y113.png,classification/yes/Y113.JPG,102
+val,yes,val/yes/Y114.png,classification/yes/Y114.JPG,103
+train,yes,train/yes/Y115.png,classification/yes/Y115.JPG,104
+train,yes,train/yes/Y116.png,classification/yes/Y116.JPG,105
+train,yes,train/yes/Y117.png,classification/yes/Y117.JPG,106
+val,yes,val/yes/Y12.png,classification/yes/Y12.jpg,107
+train,yes,train/yes/Y120.png,classification/yes/Y120.JPG,108
+train,yes,train/yes/Y13.png,classification/yes/Y13.jpg,109
+train,yes,train/yes/Y14.png,classification/yes/Y14.jpg,110
+val,yes,val/yes/Y146.png,classification/yes/Y146.JPG,111
+val,yes,val/yes/Y147.png,classification/yes/Y147.JPG,112
+test,yes,test/yes/Y148.png,classification/yes/Y148.JPG,113
+train,yes,train/yes/Y15.png,classification/yes/Y15.jpg,114
+test,yes,test/yes/Y153.png,classification/yes/Y153.jpg,94
+train,yes,train/yes/Y154.png,classification/yes/Y154.jpg,116
+train,yes,train/yes/Y155.png,classification/yes/Y155.JPG,117
+train,yes,train/yes/Y156.png,classification/yes/Y156.JPG,118
+train,yes,train/yes/Y157.png,classification/yes/Y157.JPG,119
+train,yes,train/yes/Y158.png,classification/yes/Y158.JPG,120
+train,yes,train/yes/Y159.png,classification/yes/Y159.JPG,121
+val,yes,val/yes/Y16.png,classification/yes/Y16.JPG,122
+val,yes,val/yes/Y160.png,classification/yes/Y160.JPG,123
+test,yes,test/yes/Y161.png,classification/yes/Y161.JPG,124
+test,yes,test/yes/Y163.png,classification/yes/Y163.JPG,125
+val,yes,val/yes/Y164.png,classification/yes/Y164.JPG,126
+train,yes,train/yes/Y165.png,classification/yes/Y165.JPG,127
+test,yes,test/yes/Y166.png,classification/yes/Y166.JPG,128
+train,yes,train/yes/Y167.png,classification/yes/Y167.JPG,129
+train,yes,train/yes/Y168.png,classification/yes/Y168.jpg,130
+test,yes,test/yes/Y170.png,classification/yes/Y170.JPG,131
+train,yes,train/yes/Y18.png,classification/yes/Y18.JPG,132
+train,yes,train/yes/Y180.png,classification/yes/Y180.jpg,133
+test,yes,test/yes/Y182.png,classification/yes/Y182.JPG,134
+test,yes,test/yes/Y183.png,classification/yes/Y183.jpg,135
+train,yes,train/yes/Y184.png,classification/yes/Y184.JPG,136
+train,yes,train/yes/Y185.png,classification/yes/Y185.jpg,137
+val,yes,val/yes/Y186.png,classification/yes/Y186.jpg,138
+train,yes,train/yes/Y187.png,classification/yes/Y187.jpg,139
+train,yes,train/yes/Y188.png,classification/yes/Y188.jpg,140
+test,yes,test/yes/Y19.png,classification/yes/Y19.JPG,141
+val,yes,val/yes/Y192.png,classification/yes/Y192.JPG,142
+train,yes,train/yes/Y193.png,classification/yes/Y193.JPG,143
+train,yes,train/yes/Y194.png,classification/yes/Y194.jpg,144
+test,yes,test/yes/Y195.png,classification/yes/Y195.JPG,145
+train,yes,train/yes/Y2.png,classification/yes/Y2.jpg,146
+train,yes,train/yes/Y20.png,classification/yes/Y20.jpg,147
+train,yes,train/yes/Y21.png,classification/yes/Y21.jpg,148
+train,yes,train/yes/Y22.png,classification/yes/Y22.jpg,149
+train,yes,train/yes/Y23.png,classification/yes/Y23.JPG,150
+train,yes,train/yes/Y24.png,classification/yes/Y24.jpg,151
+train,yes,train/yes/Y242.png,classification/yes/Y242.JPG,152
+train,yes,train/yes/Y243.png,classification/yes/Y243.JPG,153
+train,yes,train/yes/Y244.png,classification/yes/Y244.JPG,154
+train,yes,train/yes/Y245.png,classification/yes/Y245.jpg,155
+test,yes,test/yes/Y246.png,classification/yes/Y246.JPG,156
+train,yes,train/yes/Y247.png,classification/yes/Y247.JPG,157
+train,yes,train/yes/Y248.png,classification/yes/Y248.JPG,158
+train,yes,train/yes/Y249.png,classification/yes/Y249.JPG,159
+train,yes,train/yes/Y25.png,classification/yes/Y25.jpg,160
+train,yes,train/yes/Y250.png,classification/yes/Y250.jpg,161
+test,yes,test/yes/Y251.png,classification/yes/Y251.JPG,162
+val,yes,val/yes/Y252.png,classification/yes/Y252.jpg,163
+train,yes,train/yes/Y253.png,classification/yes/Y253.JPG,164
+test,yes,test/yes/Y254.png,classification/yes/Y254.jpg,165
+train,yes,train/yes/Y255.png,classification/yes/Y255.JPG,166
+train,yes,train/yes/Y256.png,classification/yes/Y256.JPG,167
+val,yes,val/yes/Y257.png,classification/yes/Y257.jpg,168
+val,yes,val/yes/Y258.png,classification/yes/Y258.JPG,169
+train,yes,train/yes/Y259.png,classification/yes/Y259.JPG,170
+train,yes,train/yes/Y26.png,classification/yes/Y26.jpg,171
+train,yes,train/yes/Y27.png,classification/yes/Y27.jpg,172
+train,yes,train/yes/Y28.png,classification/yes/Y28.jpg,173
+train,yes,train/yes/Y29.png,classification/yes/Y29.jpg,174
+train,yes,train/yes/Y3.png,classification/yes/Y3.jpg,175
+train,yes,train/yes/Y30.png,classification/yes/Y30.jpg,176
+test,yes,test/yes/Y31.png,classification/yes/Y31.jpg,177
+train,yes,train/yes/Y32.png,classification/yes/Y32.jpg,178
+train,yes,train/yes/Y35.png,classification/yes/Y35.jpg,179
+train,yes,train/yes/Y36.png,classification/yes/Y36.JPG,180
+train,yes,train/yes/Y39.png,classification/yes/Y39.jpg,181
+val,yes,val/yes/Y4.png,classification/yes/Y4.jpg,182
+train,yes,train/yes/Y40.png,classification/yes/Y40.JPG,183
+train,yes,train/yes/Y41.png,classification/yes/Y41.jpg,184
+test,yes,test/yes/Y42.png,classification/yes/Y42.jpg,185
+val,yes,val/yes/Y44.png,classification/yes/Y44.JPG,186
+train,yes,train/yes/Y45.png,classification/yes/Y45.JPG,187
+train,yes,train/yes/Y46.png,classification/yes/Y46.jpg,188
+train,yes,train/yes/Y47.png,classification/yes/Y47.JPG,189
+train,yes,train/yes/Y49.png,classification/yes/Y49.JPG,190
+train,yes,train/yes/Y50.png,classification/yes/Y50.JPG,191
+val,yes,val/yes/Y51.png,classification/yes/Y51.jpg,192
+val,yes,val/yes/Y52.png,classification/yes/Y52.jpg,193
+test,yes,test/yes/Y53.png,classification/yes/Y53.jpg,194
+test,yes,test/yes/Y55.png,classification/yes/Y55.jpg,195
+train,yes,train/yes/Y56.png,classification/yes/Y56.jpg,196
+train,yes,train/yes/Y58.png,classification/yes/Y58.JPG,197
+val,yes,val/yes/Y59.png,classification/yes/Y59.JPG,198
+train,yes,train/yes/Y6.png,classification/yes/Y6.jpg,199
+test,yes,test/yes/Y60.png,classification/yes/Y60.jpg,200
+train,yes,train/yes/Y61.png,classification/yes/Y61.jpg,201
+train,yes,train/yes/Y65.png,classification/yes/Y65.JPG,202
+train,yes,train/yes/Y66.png,classification/yes/Y66.JPG,203
+val,yes,val/yes/Y67.png,classification/yes/Y67.JPG,204
+test,yes,test/yes/Y7.png,classification/yes/Y7.jpg,205
+val,yes,val/yes/Y71.png,classification/yes/Y71.JPG,206
+train,yes,train/yes/Y73.png,classification/yes/Y73.jpg,207
+train,yes,train/yes/Y75.png,classification/yes/Y75.JPG,208
+train,yes,train/yes/Y76.png,classification/yes/Y76.jpg,160
+train,yes,train/yes/Y77.png,classification/yes/Y77.jpg,210
+train,yes,train/yes/Y78.png,classification/yes/Y78.jpg,211
+train,yes,train/yes/Y8.png,classification/yes/Y8.jpg,179
+train,yes,train/yes/Y81.png,classification/yes/Y81.jpg,213
+train,yes,train/yes/Y82.png,classification/yes/Y82.jpg,214
+train,yes,train/yes/Y85.png,classification/yes/Y85.JPG,215
+train,yes,train/yes/Y86.png,classification/yes/Y86.JPG,216
+train,yes,train/yes/Y89.png,classification/yes/Y89.JPG,217
+train,yes,train/yes/Y9.png,classification/yes/Y9.jpg,218
+train,yes,train/yes/Y90.png,classification/yes/Y90.jpg,219
+train,yes,train/yes/Y91.png,classification/yes/Y91.jpg,220
+train,yes,train/yes/Y92.png,classification/yes/Y92.jpg,221
+train,yes,train/yes/Y92_2.png,classification/yes/Y92.png,147
+train,yes,train/yes/Y95.png,classification/yes/Y95.jpg,223
+train,yes,train/yes/Y96.png,classification/yes/Y96.jpg,224
+train,yes,train/yes/Y97.png,classification/yes/Y97.JPG,225
+train,yes,train/yes/Y98.png,classification/yes/Y98.JPG,226
+train,yes,train/yes/Y99.png,classification/yes/Y99.JPG,227
