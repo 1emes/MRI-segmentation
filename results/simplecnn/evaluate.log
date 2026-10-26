@@ -1,0 +1,9 @@
+simplecnn - test (34 images), threshold 0.5
+  accuracy     0.765  (95% CI 0.618-0.912)
+  precision    0.760  (95% CI 0.577-0.920)
+  recall       0.905  (95% CI 0.762-1.000)
+  specificity  0.538  (95% CI 0.250-0.800)
+  f1           0.826  (95% CI 0.683-0.931)
+  roc_auc      0.733  (95% CI 0.506-0.920)
+  confusion    TN=7 FP=6 FN=2 TP=19
+Saved to results/simplecnn

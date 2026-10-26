@@ -1,0 +1,8 @@
+Found 253 images in classification
+Dropped 25 byte-identical copies
+228 unique files in 216 near-duplicate groups
+split    no  yes  total
+train    61   99    160
+val      13   21     34
+test     13   21     34
+Saved to data/processed

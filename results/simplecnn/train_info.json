@@ -1,0 +1,23 @@
+{
+  "arch": "simplecnn",
+  "best_epoch": 25,
+  "best_val_loss": 0.3744759261608124,
+  "best_val_acc": 0.7352941176470589,
+  "best_val_auc": 0.8534798534798534,
+  "epochs_run": 40,
+  "train_seconds": 18.9,
+  "device": "NVIDIA A100-SXM4-80GB",
+  "params": 1173473,
+  "hyperparameters": {
+    "arch": "simplecnn",
+    "epochs": 60,
+    "patience": 15,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "size": 224,
+    "no_pretrained": false,
+    "num_workers": 4,
+    "seed": 42
+  }
+}

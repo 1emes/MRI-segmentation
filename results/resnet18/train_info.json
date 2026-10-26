@@ -1,0 +1,23 @@
+{
+  "arch": "resnet18",
+  "best_epoch": 8,
+  "best_val_loss": 0.19282887876033783,
+  "best_val_acc": 0.9117647058823529,
+  "best_val_auc": 0.9706959706959707,
+  "epochs_run": 23,
+  "train_seconds": 12.8,
+  "device": "NVIDIA A100-SXM4-80GB",
+  "params": 11177025,
+  "hyperparameters": {
+    "arch": "resnet18",
+    "epochs": 60,
+    "patience": 15,
+    "batch_size": 32,
+    "lr": 0.0001,
+    "weight_decay": 0.0001,
+    "size": 224,
+    "no_pretrained": false,
+    "num_workers": 4,
+    "seed": 42
+  }
+}
