@@ -10,15 +10,20 @@ Dataset: [Brain MRI Images for Brain Tumor Detection](https://www.kaggle.com/dat
 ## Results at a glance
 
 - **Cross-validation (main result).** An ImageNet-pretrained ResNet-18 reaches a mean ROC AUC of
-  **0.92 ± 0.05** and accuracy of **0.85 ± 0.05** over 5 group-aware folds × 3 seeds. The four
-  training configurations tested land within noise of each other; the best one (`schedule_wd`,
-  cosine schedule sized to the run + weight decay 5e-2) beats the baseline by only +0.005 AUC.
+  **0.92 ± 0.05** and accuracy of **0.85 ± 0.05** over 5 group-aware folds × 3 seeds. No training
+  configuration shows a consistent AUC gain over the baseline; the best one (`schedule_wd`, cosine
+  schedule sized to the run + weight decay 5e-2) is +0.005 AUC, 95% CI [−0.028, 0.039] (corrected
+  repeated k-fold t-test).
+- **Pretraining control.** The same ResNet-18 and training setup from random initialization
+  (`baseline_scratch`) drops to a mean AUC of **0.74 ± 0.08**: −0.173, 95% CI [−0.299, −0.047], and
+  the pretrained model wins all 15 runs. On the test split it misses 9 images against 3
+  (exact McNemar p = 0.031).
 - **Test split (confirmation).** On the 34 held-out images, `schedule_wd` misses 1 image
   (accuracy 0.971, F1 0.976, AUC 0.989) against 3 for the baseline (0.912 / 0.930 / 0.971).
-  That gap is 2 images and sits inside the confidence intervals, so the cross-validation is the
+  The two models disagree on 2 images (exact McNemar p = 0.5), so the cross-validation is the
   number to trust.
-- Picking the decision threshold on the validation split (recall ≥ 0.95) did not help: it trades a
-  little recall for a large, unstable drop in specificity. The fixed 0.5 threshold is kept.
+- Picking the decision threshold on the validation split (recall ≥ 0.95) did not help: it buys a
+  little recall at the cost of a large, unstable drop in specificity. The fixed 0.5 threshold is kept.
 
 ![Cross-validation comparison](results/cv/cv_comparison.png)
 
@@ -37,6 +42,7 @@ Dataset: [Brain MRI Images for Brain Tumor Detection](https://www.kaggle.com/dat
 | `colab/run_colab.sh` | Runs the pipeline on a Colab A100, downloads `results/` and the checkpoints |
 | `colab/remote_train.py` | The part of the pipeline that runs inside the Colab kernel |
 | `results/` | Outputs of the experiments reported below (checkpoints are not versioned) |
+| `paper/` | IEEE paper (Portuguese) and `analysis.py`, which computes its statistics and test figure from `results/` |
 | `kmeans.py`, `eraser.py`, `segmentation/` | K-means segmentation, manual mask cleanup and the 3 masks made so far |
 
 ## Pipeline
@@ -77,7 +83,10 @@ to 15°, brightness/contrast jitter), `BCEWithLogitsLoss` with `pos_weight = n_n
 batch 32, learning rate 1e-4, bf16 autocast on GPU, and the checkpoint with the lowest validation loss
 is kept (early stopping after 15 epochs without improvement).
 
-Each configuration adds one change to the previous one:
+Each configuration changes the previous one; `schedule` changes both the cosine length and the
+warmup, and `schedule_wd_freeze` both the frozen epochs and the head learning rate, so those steps do
+not isolate a single factor. `baseline_scratch` is a control outside the chain: `baseline` with random
+initialization instead of the ImageNet weights.
 
 | Config | Epochs (cosine length) | Warmup | Weight decay | Head-only epochs | Head LR |
 |---|---:|---:|---:|---:|---:|
@@ -85,6 +94,7 @@ Each configuration adds one change to the previous one:
 | `schedule` | 25 | 2 | 1e-4 | 0 | 1e-4 |
 | `schedule_wd` | 25 | 2 | 5e-2 | 0 | 1e-4 |
 | `schedule_wd_freeze` | 25 | 2 | 5e-2 | 3 | 1e-3 |
+| `baseline_scratch` (control, random init) | 60 | 0 | 1e-4 | 0 | 1e-4 |
 
 Why: in the first experiment the cosine was sized for 60 epochs but early stopping ended the run at
 epoch 23, so the learning rate was still at 96% of its initial value at the best epoch; 1e-4 is a weak
@@ -131,6 +141,9 @@ PIPELINE=cv CKPT_DIR=~/models/MRI-segmentation/run1 colab/run_colab.sh
 
 # only the cross-validation
 PIPELINE=cv CV_ONLY=1 colab/run_colab.sh
+
+# pretraining control: cross-validate, retrain and evaluate baseline_scratch (results/cv_scratch)
+PIPELINE=scratch CKPT_DIR=~/models/MRI-segmentation/scratch colab/run_colab.sh
 
 # first experiment: train + evaluate ResNet-18 and SimpleCNN
 colab/run_colab.sh
@@ -261,8 +274,34 @@ Single train/val/test split, `baseline` training configuration, test split (34 i
 | ResNet-18 | ![](results/resnet18/training_curves.png) | ![](results/resnet18/confusion_matrix.png) | ![](results/resnet18/roc_curve.png) |
 | SimpleCNN | ![](results/simplecnn/training_curves.png) | ![](results/simplecnn/confusion_matrix.png) | ![](results/simplecnn/roc_curve.png) |
 
-Transfer learning is what makes the difference on such a small dataset: the CNN trained from scratch
-flags almost half of the healthy scans as tumor (specificity 0.54).
+The CNN trained from scratch flags almost half of the healthy scans as tumor (specificity 0.54). It
+differs from the ResNet-18 in architecture and learning rate too, so the control below isolates the
+effect of pretraining.
+
+### Pretraining control: ResNet-18 from random initialization
+
+`baseline_scratch` is `baseline` with random weights: same architecture, hyperparameters, seeds and
+folds (run on 2026-10-26, same Colab A100, 0.35 compute units). Cross-validation (15 runs, threshold 0.5):
+
+| Config | ROC AUC | Sensitivity | Specificity | ΔAUC vs baseline [corrected 95% CI] (wins / ties / losses) |
+|---|---|---|---|---|
+| baseline (ImageNet) | 0.917 ± 0.054 | 0.870 ± 0.073 | 0.796 ± 0.118 | - |
+| baseline_scratch (random) | 0.744 ± 0.082 | 0.702 ± 0.101 | 0.633 ± 0.162 | −0.173 [−0.299, −0.047] (0 / 0 / 15) |
+
+Test split (34 images), 95% Wilson intervals for proportions and bootstrap interval for the AUC:
+
+| Metric | baseline (ImageNet) | baseline_scratch (random) |
+|---|---|---|
+| Accuracy | 0.912 (0.77-0.97) | 0.735 (0.57-0.85) |
+| Sensitivity | 0.952 (0.77-0.99) | 0.857 (0.65-0.95) |
+| Specificity | 0.846 (0.58-0.96) | 0.538 (0.29-0.77) |
+| ROC AUC | 0.971 (0.90-1.00) | 0.766 (0.56-0.94) |
+| TN / FP / FN / TP | 11 / 2 / 1 / 20 | 7 / 6 / 3 / 18 |
+
+The two models disagree on 6 test images, all right for the pretrained one (exact McNemar p = 0.031);
+`baseline_scratch` and SimpleCNN are indistinguishable (p = 1.0). The control reuses hyperparameters
+chosen for fine-tuning, and in 4 of the 15 folds its best epoch was past 40, so a search of its own could
+narrow the gap. `python paper/analysis.py` recomputes every interval and test above from `results/`.
 
 ## Checkpoints
 

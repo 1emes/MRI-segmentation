@@ -1,0 +1,9 @@
+resnet18 - test (34 images, threshold 0.39)
+  accuracy     0.765  (95% CI 0.618-0.882)
+  precision    0.741  (95% CI 0.565-0.897)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  0.462  (95% CI 0.188-0.734)
+  f1           0.833  (95% CI 0.700-0.931)
+  roc_auc      0.766  (95% CI 0.561-0.939)
+  confusion    TN=6 FP=7 FN=1 TP=20
+Saved to results/final/baseline_scratch

@@ -1,11 +1,16 @@
 """
-Training configurations compared by cv.py. Each one adds a single change to the previous one.
+Training configurations compared by cv.py. Each one changes the previous one:
 
     baseline            the configuration of the first experiment (cosine sized for 60 epochs,
                         so it barely decays before early stopping, weak weight decay, no freezing)
     schedule            cosine sized to the real run: 25 epochs with 2 warmup epochs
     schedule_wd         + AdamW weight decay 5e-2
     schedule_wd_freeze  + head-only training for the first 3 epochs and a 10x larger head learning rate
+
+Control (not part of the chain above, cross-validated on its own in results/cv_scratch):
+
+    baseline_scratch    baseline with random initialization instead of the ImageNet weights, to isolate
+                        the effect of pretraining from the architecture and the training setup
 """
 
 DEFAULTS = {
@@ -28,4 +33,5 @@ CONFIGS = {
     "schedule_wd": {"epochs": 25, "warmup_epochs": 2, "weight_decay": 5e-2},
     "schedule_wd_freeze": {"epochs": 25, "warmup_epochs": 2, "weight_decay": 5e-2,
                            "freeze_epochs": 3, "head_lr": 1e-3},
+    "baseline_scratch": {"pretrained": False},
 }
