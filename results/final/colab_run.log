@@ -1,0 +1,254 @@
+[08:56:35] compute units before: 311.75
+[08:56:35] creating session mri-1026-085633 (A100)
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Creating session 'mri-1026-085633'...
+[colab] Session READY.
+[08:56:39] session ready in 4 s
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Uploaded '/tmp/tmp.N3WatSBHOv/mri.tar.gz' to '/content/mri.tar.gz'
+[08:56:43] running cv for: baseline schedule schedule_wd schedule_wd_freeze (seeds 42 43 44)
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+$ tar xzf /content/mri.tar.gz
+$ pip install -q -r requirements.txt
+$ mkdir -p results && nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv > results/colab_gpu.csv && python -c 'import torch, torchvision; print("torch", torch.__version__, "| torchvision", torchvision.__version__, "| CUDA", torch.version.cuda)' | tee results/colab_versions.txt && cat results/colab_gpu.csv
+torch 2.11.0+cu130 | torchvision 0.26.0+cu130 | CUDA 13.0
+name, memory.total [MiB], driver_version
+NVIDIA A100-SXM4-80GB, 81920 MiB, 580.82.07
+$ python preprocess.py --data_dir classification --output_dir data/processed --seed 42
+Found 253 images in classification
+Dropped 25 byte-identical copies
+228 unique files in 216 near-duplicate groups
+split    no  yes  total
+train    61   99    160
+val      13   21     34
+test     13   21     34
+Saved to data/processed
+$ cp data/processed/summary.json data/processed/splits.csv results/
+$ python -c 'from classifier import build_model; build_model("resnet18")'
+Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /root/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
+
+  0%|          | 0.00/44.7M [00:00<?, ?B/s]
+ 39%|███▉      | 17.5M/44.7M [00:00<00:00, 183MB/s]
+ 91%|█████████ | 40.8M/44.7M [00:00<00:00, 218MB/s]
+100%|██████████| 44.7M/44.7M [00:00<00:00, 215MB/s]
+$ python cv.py --config baseline --seeds 42 43 44 --output_dir results/cv > results/cv/baseline/cv.log
+$ python cv.py --config schedule --seeds 42 43 44 --output_dir results/cv > results/cv/schedule/cv.log
+$ python cv.py --config schedule_wd --seeds 42 43 44 --output_dir results/cv > results/cv/schedule_wd/cv.log
+$ python cv.py --config schedule_wd_freeze --seeds 42 43 44 --output_dir results/cv > results/cv/schedule_wd_freeze/cv.log
+[baseline] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": true, "epochs": 60, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 0, "freeze_epochs": 0, "size": 224}
+[baseline] seed 42 fold 0: auc 0.842 | t=0.5 acc 0.795 f1 0.846 | t=0.31 acc 0.692 f1 0.793 | best epoch 2/17 in 13 s
+[baseline] seed 42 fold 1: auc 0.901 | t=0.5 acc 0.811 f1 0.837 | t=0.29 acc 0.838 f1 0.870 | best epoch 19/34 in 19 s
+[baseline] seed 42 fold 2: auc 0.983 | t=0.5 acc 0.927 f1 0.936 | t=0.59 acc 0.927 f1 0.936 | best epoch 24/39 in 23 s
+[baseline] seed 42 fold 3: auc 0.972 | t=0.5 acc 0.854 f1 0.880 | t=0.68 acc 0.854 f1 0.875 | best epoch 34/49 in 28 s
+[baseline] seed 42 fold 4: auc 0.943 | t=0.5 acc 0.861 f1 0.898 | t=0.70 acc 0.889 f1 0.917 | best epoch 24/39 in 22 s
+[baseline] seed 43 fold 0: auc 0.905 | t=0.5 acc 0.816 f1 0.851 | t=0.63 acc 0.842 f1 0.870 | best epoch 20/35 in 20 s
+[baseline] seed 43 fold 1: auc 0.933 | t=0.5 acc 0.850 f1 0.870 | t=0.15 acc 0.850 f1 0.880 | best epoch 7/22 in 12 s
+[baseline] seed 43 fold 2: auc 0.960 | t=0.5 acc 0.825 f1 0.868 | t=0.28 acc 0.825 f1 0.877 | best epoch 14/29 in 17 s
+[baseline] seed 43 fold 3: auc 0.773 | t=0.5 acc 0.725 f1 0.766 | t=0.40 acc 0.750 f1 0.792 | best epoch 8/23 in 13 s
+[baseline] seed 43 fold 4: auc 0.938 | t=0.5 acc 0.861 f1 0.884 | t=0.14 acc 0.833 f1 0.885 | best epoch 7/22 in 13 s
+[baseline] seed 44 fold 0: auc 0.949 | t=0.5 acc 0.868 f1 0.902 | t=0.12 acc 0.737 f1 0.828 | best epoch 6/21 in 12 s
+[baseline] seed 44 fold 1: auc 0.902 | t=0.5 acc 0.846 f1 0.875 | t=0.02 acc 0.641 f1 0.767 | best epoch 9/24 in 13 s
+[baseline] seed 44 fold 2: auc 0.947 | t=0.5 acc 0.872 f1 0.902 | t=0.44 acc 0.897 f1 0.923 | best epoch 29/44 in 21 s
+[baseline] seed 44 fold 3: auc 0.878 | t=0.5 acc 0.825 f1 0.844 | t=0.48 acc 0.825 f1 0.851 | best epoch 12/27 in 12 s
+[baseline] seed 44 fold 4: auc 0.933 | t=0.5 acc 0.868 f1 0.894 | t=0.66 acc 0.868 f1 0.889 | best epoch 27/42 in 18 s
+[baseline] saved 15 runs to results/cv/baseline/folds.csv
+
+[schedule] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": true, "epochs": 25, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 2, "freeze_epochs": 0, "size": 224}
+[schedule] seed 42 fold 0: auc 0.785 | t=0.5 acc 0.795 f1 0.833 | t=0.35 acc 0.692 f1 0.778 | best epoch 2/17 in 12 s
+[schedule] seed 42 fold 1: auc 0.926 | t=0.5 acc 0.865 f1 0.889 | t=0.63 acc 0.865 f1 0.884 | best epoch 3/18 in 11 s
+[schedule] seed 42 fold 2: auc 0.976 | t=0.5 acc 0.927 f1 0.936 | t=0.50 acc 0.927 f1 0.936 | best epoch 13/25 in 15 s
+[schedule] seed 42 fold 3: auc 0.949 | t=0.5 acc 0.902 f1 0.926 | t=0.82 acc 0.805 f1 0.833 | best epoch 11/25 in 14 s
+[schedule] seed 42 fold 4: auc 0.926 | t=0.5 acc 0.833 f1 0.880 | t=0.62 acc 0.833 f1 0.880 | best epoch 16/25 in 15 s
+[schedule] seed 43 fold 0: auc 0.908 | t=0.5 acc 0.868 f1 0.889 | t=0.14 acc 0.842 f1 0.875 | best epoch 15/25 in 14 s
+[schedule] seed 43 fold 1: auc 0.951 | t=0.5 acc 0.875 f1 0.898 | t=0.33 acc 0.825 f1 0.863 | best epoch 11/25 in 14 s
+[schedule] seed 43 fold 2: auc 0.963 | t=0.5 acc 0.875 f1 0.898 | t=0.26 acc 0.900 f1 0.920 | best epoch 25/25 in 14 s
+[schedule] seed 43 fold 3: auc 0.841 | t=0.5 acc 0.750 f1 0.800 | t=0.54 acc 0.800 f1 0.833 | best epoch 8/23 in 13 s
+[schedule] seed 43 fold 4: auc 0.938 | t=0.5 acc 0.806 f1 0.851 | t=0.46 acc 0.833 f1 0.875 | best epoch 13/25 in 14 s
+[schedule] seed 44 fold 0: auc 0.964 | t=0.5 acc 0.842 f1 0.885 | t=0.31 acc 0.737 f1 0.821 | best epoch 6/21 in 12 s
+[schedule] seed 44 fold 1: auc 0.951 | t=0.5 acc 0.897 f1 0.913 | t=0.03 acc 0.641 f1 0.767 | best epoch 9/24 in 14 s
+[schedule] seed 44 fold 2: auc 0.929 | t=0.5 acc 0.897 f1 0.923 | t=0.27 acc 0.872 f1 0.906 | best epoch 10/25 in 14 s
+[schedule] seed 44 fold 3: auc 0.896 | t=0.5 acc 0.825 f1 0.851 | t=0.42 acc 0.825 f1 0.857 | best epoch 14/25 in 14 s
+[schedule] seed 44 fold 4: auc 0.881 | t=0.5 acc 0.816 f1 0.863 | t=0.49 acc 0.816 f1 0.863 | best epoch 12/25 in 14 s
+[schedule] saved 15 runs to results/cv/schedule/folds.csv
+
+[schedule_wd] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": true, "epochs": 25, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.05, "warmup_epochs": 2, "freeze_epochs": 0, "size": 224}
+[schedule_wd] seed 42 fold 0: auc 0.788 | t=0.5 acc 0.795 f1 0.833 | t=0.35 acc 0.692 f1 0.778 | best epoch 2/17 in 13 s
+[schedule_wd] seed 42 fold 1: auc 0.926 | t=0.5 acc 0.838 f1 0.864 | t=0.64 acc 0.838 f1 0.857 | best epoch 3/18 in 11 s
+[schedule_wd] seed 42 fold 2: auc 0.993 | t=0.5 acc 0.976 f1 0.979 | t=0.47 acc 0.976 f1 0.979 | best epoch 13/25 in 15 s
+[schedule_wd] seed 42 fold 3: auc 0.956 | t=0.5 acc 0.927 f1 0.943 | t=0.81 acc 0.805 f1 0.818 | best epoch 13/25 in 15 s
+[schedule_wd] seed 42 fold 4: auc 0.933 | t=0.5 acc 0.861 f1 0.898 | t=0.50 acc 0.861 f1 0.898 | best epoch 25/25 in 14 s
+[schedule_wd] seed 43 fold 0: auc 0.905 | t=0.5 acc 0.868 f1 0.889 | t=0.19 acc 0.868 f1 0.894 | best epoch 15/25 in 15 s
+[schedule_wd] seed 43 fold 1: auc 0.946 | t=0.5 acc 0.850 f1 0.875 | t=0.28 acc 0.850 f1 0.880 | best epoch 11/25 in 14 s
+[schedule_wd] seed 43 fold 2: auc 0.963 | t=0.5 acc 0.900 f1 0.920 | t=0.17 acc 0.850 f1 0.889 | best epoch 25/25 in 15 s
+[schedule_wd] seed 43 fold 3: auc 0.841 | t=0.5 acc 0.825 f1 0.857 | t=0.48 acc 0.825 f1 0.857 | best epoch 8/23 in 14 s
+[schedule_wd] seed 43 fold 4: auc 0.924 | t=0.5 acc 0.806 f1 0.851 | t=0.51 acc 0.806 f1 0.851 | best epoch 13/25 in 14 s
+[schedule_wd] seed 44 fold 0: auc 0.967 | t=0.5 acc 0.789 f1 0.852 | t=0.54 acc 0.816 f1 0.868 | best epoch 6/21 in 12 s
+[schedule_wd] seed 44 fold 1: auc 0.938 | t=0.5 acc 0.872 f1 0.894 | t=0.03 acc 0.615 f1 0.754 | best epoch 9/24 in 14 s
+[schedule_wd] seed 44 fold 2: auc 0.926 | t=0.5 acc 0.846 f1 0.880 | t=0.19 acc 0.897 f1 0.926 | best epoch 10/25 in 14 s
+[schedule_wd] seed 44 fold 3: auc 0.898 | t=0.5 acc 0.800 f1 0.833 | t=0.47 acc 0.800 f1 0.833 | best epoch 14/25 in 14 s
+[schedule_wd] seed 44 fold 4: auc 0.936 | t=0.5 acc 0.842 f1 0.880 | t=0.51 acc 0.868 f1 0.898 | best epoch 10/25 in 14 s
+[schedule_wd] saved 15 runs to results/cv/schedule_wd/folds.csv
+
+[schedule_wd_freeze] 194 images (74 no, 120 yes), 184 groups, config {"arch": "resnet18", "pretrained": true, "epochs": 25, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": 0.001, "weight_decay": 0.05, "warmup_epochs": 2, "freeze_epochs": 3, "size": 224}
+[schedule_wd_freeze] seed 42 fold 0: auc 0.603 | t=0.5 acc 0.641 f1 0.696 | t=0.35 acc 0.564 f1 0.721 | best epoch 3/18 in 13 s
+[schedule_wd_freeze] seed 42 fold 1: auc 0.929 | t=0.5 acc 0.838 f1 0.857 | t=0.10 acc 0.865 f1 0.898 | best epoch 25/25 in 14 s
+[schedule_wd_freeze] seed 42 fold 2: auc 0.936 | t=0.5 acc 0.780 f1 0.836 | t=0.79 acc 0.878 f1 0.884 | best epoch 8/23 in 13 s
+[schedule_wd_freeze] seed 42 fold 3: auc 0.982 | t=0.5 acc 0.927 f1 0.946 | t=0.86 acc 0.780 f1 0.791 | best epoch 23/25 in 14 s
+[schedule_wd_freeze] seed 42 fold 4: auc 0.930 | t=0.5 acc 0.861 f1 0.898 | t=0.24 acc 0.861 f1 0.898 | best epoch 16/25 in 15 s
+[schedule_wd_freeze] seed 43 fold 0: auc 0.875 | t=0.5 acc 0.842 f1 0.880 | t=0.37 acc 0.816 f1 0.863 | best epoch 13/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 1: auc 0.957 | t=0.5 acc 0.825 f1 0.851 | t=0.29 acc 0.850 f1 0.885 | best epoch 14/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 2: auc 0.939 | t=0.5 acc 0.825 f1 0.868 | t=0.26 acc 0.825 f1 0.873 | best epoch 22/25 in 15 s
+[schedule_wd_freeze] seed 43 fold 3: auc 0.844 | t=0.5 acc 0.800 f1 0.833 | t=0.20 acc 0.775 f1 0.836 | best epoch 21/25 in 14 s
+[schedule_wd_freeze] seed 43 fold 4: auc 0.941 | t=0.5 acc 0.861 f1 0.902 | t=0.52 acc 0.861 f1 0.902 | best epoch 10/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 0: auc 0.979 | t=0.5 acc 0.921 f1 0.939 | t=0.17 acc 0.763 f1 0.842 | best epoch 6/21 in 12 s
+[schedule_wd_freeze] seed 44 fold 1: auc 0.948 | t=0.5 acc 0.872 f1 0.894 | t=0.02 acc 0.692 f1 0.793 | best epoch 14/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 2: auc 0.911 | t=0.5 acc 0.897 f1 0.923 | t=0.68 acc 0.846 f1 0.880 | best epoch 11/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 3: auc 0.901 | t=0.5 acc 0.875 f1 0.898 | t=0.17 acc 0.850 f1 0.885 | best epoch 11/25 in 14 s
+[schedule_wd_freeze] seed 44 fold 4: auc 0.919 | t=0.5 acc 0.895 f1 0.913 | t=0.69 acc 0.868 f1 0.884 | best epoch 10/25 in 14 s
+[schedule_wd_freeze] saved 15 runs to results/cv/schedule_wd_freeze/folds.csv
+
+$ python cv.py --summarize results/cv
+| Config | ROC AUC | Accuracy (0.5) | F1 (0.5) | Recall (0.5) | Specificity (0.5) | Accuracy (val thr.) | F1 (val thr.) | Recall (val thr.) | Specificity (val thr.) | ΔAUC vs baseline (wins/ties/losses) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| baseline | 0.917 ± 0.054 | 0.840 ± 0.045 | 0.870 ± 0.039 | 0.870 ± 0.073 | 0.796 ± 0.118 | 0.818 ± 0.079 | 0.863 ± 0.050 | 0.912 ± 0.077 | 0.670 ± 0.262 | - |
+| schedule | 0.919 ± 0.051 | 0.852 ± 0.048 | 0.882 ± 0.037 | 0.897 ± 0.054 | 0.779 ± 0.120 | 0.814 ± 0.075 | 0.859 ± 0.047 | 0.901 ± 0.065 | 0.680 ± 0.238 | +0.002 (8/1/6) |
+| **schedule_wd** | 0.923 ± 0.051 | 0.853 ± 0.051 | 0.883 ± 0.040 | 0.895 ± 0.058 | 0.787 ± 0.126 | 0.825 ± 0.083 | 0.865 ± 0.056 | 0.899 ± 0.089 | 0.712 ± 0.244 | +0.005 (9/1/5) |
+| schedule_wd_freeze | 0.906 ± 0.091 | 0.844 ± 0.070 | 0.876 ± 0.061 | 0.899 ± 0.082 | 0.756 ± 0.122 | 0.806 ± 0.084 | 0.856 ± 0.051 | 0.913 ± 0.096 | 0.639 ± 0.277 | -0.011 (8/0/7) |
+Best config (highest mean ROC AUC): schedule_wd
+$ python train.py --config baseline --seed 42 --num_workers 4 --output_dir results/final/baseline 
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Config: {"arch": "resnet18", "pretrained": true, "epochs": 60, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.0001, "warmup_epochs": 0, "freeze_epochs": 0, "size": 224}
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+epoch   1 | train loss 0.5203 acc 0.575 | val loss 0.4371 acc 0.794 auc 0.773 *
+epoch   2 | train loss 0.3420 acc 0.819 | val loss 0.3750 acc 0.794 auc 0.883 *
+epoch   3 | train loss 0.2162 acc 0.900 | val loss 0.4732 acc 0.765 auc 0.872
+epoch   4 | train loss 0.1561 acc 0.931 | val loss 0.5086 acc 0.794 auc 0.923
+epoch   5 | train loss 0.1079 acc 0.950 | val loss 0.3492 acc 0.853 auc 0.960 *
+epoch   6 | train loss 0.0641 acc 0.975 | val loss 0.2608 acc 0.853 auc 0.960 *
+epoch   7 | train loss 0.0567 acc 0.975 | val loss 0.2066 acc 0.912 auc 0.971 *
+epoch   8 | train loss 0.0254 acc 0.994 | val loss 0.1928 acc 0.912 auc 0.971 *
+epoch   9 | train loss 0.0262 acc 0.994 | val loss 0.2010 acc 0.912 auc 0.967
+epoch  10 | train loss 0.0214 acc 0.994 | val loss 0.2320 acc 0.853 auc 0.949
+epoch  11 | train loss 0.0202 acc 1.000 | val loss 0.2392 acc 0.853 auc 0.949
+epoch  12 | train loss 0.0119 acc 1.000 | val loss 0.2293 acc 0.824 auc 0.963
+epoch  13 | train loss 0.0067 acc 1.000 | val loss 0.2226 acc 0.824 auc 0.960
+epoch  14 | train loss 0.0184 acc 0.994 | val loss 0.2922 acc 0.853 auc 0.952
+epoch  15 | train loss 0.0139 acc 1.000 | val loss 0.3536 acc 0.853 auc 0.934
+epoch  16 | train loss 0.0080 acc 1.000 | val loss 0.3908 acc 0.853 auc 0.923
+epoch  17 | train loss 0.0099 acc 1.000 | val loss 0.3902 acc 0.853 auc 0.919
+epoch  18 | train loss 0.0058 acc 1.000 | val loss 0.3749 acc 0.853 auc 0.919
+epoch  19 | train loss 0.0064 acc 1.000 | val loss 0.3575 acc 0.853 auc 0.930
+epoch  20 | train loss 0.0038 acc 1.000 | val loss 0.3513 acc 0.853 auc 0.930
+epoch  21 | train loss 0.0040 acc 1.000 | val loss 0.3439 acc 0.853 auc 0.934
+epoch  22 | train loss 0.0042 acc 1.000 | val loss 0.3381 acc 0.853 auc 0.938
+epoch  23 | train loss 0.0094 acc 1.000 | val loss 0.3389 acc 0.853 auc 0.938
+Early stopping: no val loss improvement for 15 epochs
+Best epoch 8 (val loss 0.1928); trained in 11 s; checkpoint: results/final/baseline/model.pt
+$ python evaluate.py --checkpoint results/final/baseline/model.pt --output_dir results/final/baseline --seed 42
+resnet18 - test (34 images, threshold 0.50)
+  accuracy     0.912  (95% CI 0.794-1.000)
+  precision    0.909  (95% CI 0.762-1.000)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  0.846  (95% CI 0.625-1.000)
+  f1           0.930  (95% CI 0.837-1.000)
+  roc_auc      0.971  (95% CI 0.902-1.000)
+  confusion    TN=11 FP=2 FN=1 TP=20
+Saved to results/final/baseline
+$ python evaluate.py --checkpoint results/final/baseline/model.pt --output_dir results/final/baseline --seed 42 --threshold val --suffix _valthr
+resnet18 - test (34 images, threshold 0.65)
+  accuracy     0.912  (95% CI 0.794-1.000)
+  precision    0.909  (95% CI 0.762-1.000)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  0.846  (95% CI 0.625-1.000)
+  f1           0.930  (95% CI 0.837-1.000)
+  roc_auc      0.971  (95% CI 0.902-1.000)
+  confusion    TN=11 FP=2 FN=1 TP=20
+Saved to results/final/baseline
+$ python train.py --config schedule_wd --seed 42 --num_workers 4 --output_dir results/final/schedule_wd --save_every_epoch
+Device: cuda (NVIDIA A100-SXM4-80GB)
+Config: {"arch": "resnet18", "pretrained": true, "epochs": 25, "patience": 15, "batch_size": 32, "lr": 0.0001, "head_lr": null, "weight_decay": 0.05, "warmup_epochs": 2, "freeze_epochs": 0, "size": 224}
+Train: 160 images (61 no, 99 yes) | Val: 34 images
+epoch   1 | train loss 0.5409 acc 0.525 | val loss 0.4991 acc 0.618 auc 0.685 *
+epoch   2 | train loss 0.4486 acc 0.681 | val loss 0.3962 acc 0.794 auc 0.828 *
+epoch   3 | train loss 0.3068 acc 0.850 | val loss 0.3988 acc 0.735 auc 0.857
+epoch   4 | train loss 0.2194 acc 0.894 | val loss 0.4838 acc 0.765 auc 0.897
+epoch   5 | train loss 0.1446 acc 0.919 | val loss 0.4272 acc 0.765 auc 0.930
+epoch   6 | train loss 0.0877 acc 0.956 | val loss 0.3314 acc 0.853 auc 0.938 *
+epoch   7 | train loss 0.0803 acc 0.969 | val loss 0.2706 acc 0.882 auc 0.949 *
+epoch   8 | train loss 0.0413 acc 0.988 | val loss 0.2358 acc 0.912 auc 0.956 *
+epoch   9 | train loss 0.0352 acc 0.994 | val loss 0.2222 acc 0.912 auc 0.967 *
+epoch  10 | train loss 0.0300 acc 0.994 | val loss 0.2199 acc 0.912 auc 0.952 *
+epoch  11 | train loss 0.0272 acc 1.000 | val loss 0.2153 acc 0.853 auc 0.952 *
+epoch  12 | train loss 0.0183 acc 1.000 | val loss 0.2193 acc 0.853 auc 0.945
+epoch  13 | train loss 0.0116 acc 1.000 | val loss 0.2196 acc 0.853 auc 0.941
+epoch  14 | train loss 0.0312 acc 0.988 | val loss 0.2522 acc 0.853 auc 0.945
+epoch  15 | train loss 0.0192 acc 0.994 | val loss 0.2826 acc 0.853 auc 0.941
+epoch  16 | train loss 0.0133 acc 1.000 | val loss 0.2922 acc 0.853 auc 0.941
+epoch  17 | train loss 0.0130 acc 1.000 | val loss 0.2992 acc 0.853 auc 0.938
+epoch  18 | train loss 0.0096 acc 1.000 | val loss 0.3039 acc 0.853 auc 0.938
+epoch  19 | train loss 0.0119 acc 1.000 | val loss 0.3036 acc 0.853 auc 0.941
+epoch  20 | train loss 0.0120 acc 1.000 | val loss 0.3007 acc 0.853 auc 0.938
+epoch  21 | train loss 0.0062 acc 1.000 | val loss 0.2991 acc 0.853 auc 0.938
+epoch  22 | train loss 0.0097 acc 1.000 | val loss 0.2974 acc 0.853 auc 0.938
+epoch  23 | train loss 0.0187 acc 1.000 | val loss 0.2996 acc 0.853 auc 0.938
+epoch  24 | train loss 0.0128 acc 1.000 | val loss 0.2981 acc 0.853 auc 0.938
+epoch  25 | train loss 0.0141 acc 0.994 | val loss 0.3001 acc 0.853 auc 0.938
+Best epoch 11 (val loss 0.2153); trained in 14 s; checkpoint: results/final/schedule_wd/model.pt
+$ python evaluate.py --checkpoint results/final/schedule_wd/model.pt --output_dir results/final/schedule_wd --seed 42
+resnet18 - test (34 images, threshold 0.50)
+  accuracy     0.971  (95% CI 0.912-1.000)
+  precision    1.000  (95% CI 1.000-1.000)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  1.000  (95% CI 1.000-1.000)
+  f1           0.976  (95% CI 0.914-1.000)
+  roc_auc      0.989  (95% CI 0.953-1.000)
+  confusion    TN=13 FP=0 FN=1 TP=20
+Saved to results/final/schedule_wd
+$ python evaluate.py --checkpoint results/final/schedule_wd/model.pt --output_dir results/final/schedule_wd --seed 42 --threshold val --suffix _valthr
+resnet18 - test (34 images, threshold 0.42)
+  accuracy     0.971  (95% CI 0.912-1.000)
+  precision    1.000  (95% CI 1.000-1.000)
+  recall       0.952  (95% CI 0.842-1.000)
+  specificity  1.000  (95% CI 1.000-1.000)
+  f1           0.976  (95% CI 0.914-1.000)
+  roc_auc      0.989  (95% CI 0.953-1.000)
+  confusion    TN=13 FP=0 FN=1 TP=20
+Saved to results/final/schedule_wd
+$ tar czf results.tar.gz --exclude='*.pt' results
+$ find results -name '*.pt' | tar cf checkpoints.tar -T -
+REMOTE_DONE
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Downloaded '/content/mri/results.tar.gz' to '/tmp/tmp.N3WatSBHOv/results.tar.gz'
+[09:03:45] results saved to results/
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Downloaded '/content/mri/checkpoints.tar' to '/tmp/tmp.N3WatSBHOv/checkpoints.tar'
+[09:08:50] checkpoints (1.2G) saved under /home/lemes/models/MRI-segmentation/cv-20261026/results/
+[09:08:50] stopping session mri-1026-085633
+
+[colab] A new version of Colab CLI is available: 0.7.5 (current: 0.7.4)
+[colab] Run 'colab update' to update.
+[colab] To silence this check, set "enable_update_check": false in ~/.config/colab-cli/settings.json
+
+[colab] Stopping session 'mri-1026-085633'...
+[colab] Session terminated.
+[09:08:53] compute units after: 310.63; session time 738 s
