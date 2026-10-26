@@ -1,0 +1,290 @@
+\documentclass[conference,a4paper]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.misc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\sisetup{output-decimal-marker={,},group-separator={.}}
+
+\begin{document}
+
+\title{Detecção de Tumores Cerebrais em Imagens de Ressonância Magnética com Transferência de Aprendizado e Validação Cruzada por Grupos}
+
+\author{\IEEEauthorblockN{Matheus Lemes Amaral}
+\IEEEauthorblockA{Universidade de Brasília (UnB)\\
+Brasília, DF, Brasil\\
+Matrícula: 241031852}}
+
+\maketitle
+
+\begin{abstract}
+Este trabalho apresenta um \textit{pipeline} completo para classificar fatias de ressonância magnética (RM) cerebral em ``com tumor'' e ``sem tumor'' a partir de um conjunto público pequeno (253 imagens). O pré-processamento remove 25 cópias idênticas, agrupa quase-duplicatas por \textit{hash} perceptual para que nenhuma imagem repetida cruze as partições, recorta o crânio e padroniza as imagens em $224\times224$. Uma ResNet-18 pré-treinada na ImageNet é comparada a uma CNN treinada do zero e quatro configurações de treino são avaliadas com validação cruzada estratificada por grupos (5 \textit{folds} $\times$ 3 sementes, 60 treinos em GPU A100). A ResNet-18 atinge AUC ROC média de $0{,}92\pm0{,}05$ e acurácia de $0{,}85\pm0{,}05$ na validação cruzada; as variações de agendamento da taxa de aprendizado e de \textit{weight decay} ficam dentro do ruído ($\Delta\text{AUC}\le0{,}005$). No conjunto de teste isolado (34 imagens), a melhor configuração erra uma única imagem (acurácia $0{,}971$, AUC $0{,}989$), enquanto a CNN sem pré-treino fica em acurácia $0{,}765$ e AUC $0{,}733$.
+\end{abstract}
+
+\begin{IEEEkeywords}
+ressonância magnética, tumor cerebral, aprendizado profundo, transferência de aprendizado, ResNet-18, validação cruzada.
+\end{IEEEkeywords}
+
+\section{Introdução}
+
+A ressonância magnética é o principal exame de imagem para a detecção de tumores cerebrais, e a triagem automática de exames pode reduzir o tempo até o diagnóstico. Redes neurais convolucionais (CNNs) são o método padrão para esse tipo de classificação, mas os conjuntos públicos de RM costumam ser pequenos, heterogêneos e conter imagens repetidas. Nesse cenário, dois riscos dominam: o modelo decorar um conjunto tão pequeno e a métrica de teste ser inflada por vazamento de dados~\cite{kapoor2023leakage}, quando cópias do mesmo exame caem no treino e no teste.
+
+Este trabalho descreve o repositório \textit{MRI-segmentation}, que implementa um classificador binário (tumor / sem tumor) com três cuidados principais: (i) deduplicação e particionamento por grupos de quase-duplicatas; (ii) transferência de aprendizado a partir da ImageNet~\cite{deng2009imagenet} com uma ResNet-18~\cite{he2016resnet}; e (iii) comparação de configurações de treino por validação cruzada estratificada por grupos, com o conjunto de teste usado uma única vez, ao final. O repositório traz ainda ferramentas de segmentação por K-means para a criação de máscaras.
+
+\section{Conjunto de Dados}
+
+Foi usado o conjunto público \textit{Brain MRI Images for Brain Tumor Detection}~\cite{kaggle2019brain}, com 253 imagens (155 com tumor e 98 sem tumor). As imagens são heterogêneas: há 184 resoluções diferentes e quatro modos de cor (RGB, tons de cinza, RGBA e paleta). A inspeção dos arquivos revelou 25 cópias idênticas byte a byte de outras imagens e alguns pares quase idênticos. Uma divisão aleatória simples colocaria cópias do mesmo exame no treino e no teste e superestimaria o desempenho.
+
+\section{Metodologia}
+
+A Fig.~\ref{fig:pipeline} resume o \textit{pipeline}, executado em uma GPU NVIDIA A100-SXM4-80GB do Google Colab (PyTorch 2.11, CUDA 13.0) por meio de um script que empacota o código e os dados, roda os experimentos e baixa os resultados.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=3.2mm,
+  box/.style={draw, rounded corners=2pt, fill=blue!6, align=center, font=\scriptsize, minimum width=3.7cm, minimum height=6mm, inner sep=2pt},
+  side/.style={draw, rounded corners=2pt, fill=orange!10, align=center, font=\scriptsize, text width=3.4cm, inner sep=2pt},
+  arr/.style={-{Latex[length=1.6mm]}, thick}]
+\node[box] (a) {253 imagens (Kaggle)\\155 tumor / 98 sem tumor};
+\node[box, below=of a] (b) {Tons de cinza + remoção de\\25 cópias idênticas (228)};
+\node[box, below=of b] (c) {\textit{dHash} 8$\times$8 $\rightarrow$ 216 grupos\\de quase-duplicatas};
+\node[box, below=of c] (d) {Recorte do crânio, \textit{padding}\\quadrado e redimensionamento 224$\times$224};
+\node[box, below=of d] (e) {Divisão estratificada por grupos\\treino 160 / val. 34 / teste 34};
+\node[box, below=of e] (f) {Validação cruzada (194 imagens)\\5 \textit{folds} $\times$ 3 sementes $\times$ 4 configs.};
+\node[box, below=of f] (g) {Retreino da melhor configuração\\e avaliação única no teste};
+\foreach \u/\v in {a/b,b/c,c/d,d/e,e/f,f/g} \draw[arr] (\u) -- (\v);
+\node[side, right=4mm of d] (s1) {Aumento de dados: recorte aleatório, espelhamento, rotação $\pm15^\circ$, brilho/contraste};
+\node[side, right=4mm of f] (s2) {ResNet-18 (ImageNet) $\times$ CNN simples; AdamW, BCE ponderada, \textit{early stopping}};
+\node[side, right=4mm of g] (s3) {Métricas com IC 95\% por \textit{bootstrap} (2000 reamostragens)};
+\draw[dashed, gray] (s1.west) -- (d.east);
+\draw[dashed, gray] (s2.west) -- (f.east);
+\draw[dashed, gray] (s3.west) -- (g.east);
+\end{tikzpicture}
+\caption{Visão geral do \textit{pipeline} de pré-processamento, treino e avaliação.}
+\label{fig:pipeline}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../results/cv/cv_comparison.png}
+\caption{Validação cruzada (média $\pm$ desvio padrão de 15 execuções por configuração) com limiar fixo de 0,5 (círculos) e limiar escolhido na validação interna para \textit{recall} $\ge0{,}95$ (losangos). O limiar ajustado ganha pouco em \textit{recall} e perde muito, e de forma instável, em especificidade.}
+\label{fig:cv}
+\end{figure*}
+
+\subsection{Pré-processamento}
+
+Cada imagem é convertida para tons de cinza e as 25 cópias idênticas são descartadas (253 $\rightarrow$ 228 imagens). Para capturar quase-duplicatas, calcula-se um \textit{hash} de diferença (\textit{dHash}) de $8\times8$ bits: a imagem é reduzida a $9\times8$ pixels e cada bit indica se um pixel é mais claro que o vizinho da direita. Imagens com o mesmo \textit{hash} são unidas por uma estrutura \textit{union-find}, resultando em 216 grupos; um grupo nunca é dividido entre partições.
+
+Em seguida, o crânio é isolado: aplica-se um filtro gaussiano $5\times5$, limiarização em 45, erosão e dilatação, e a imagem é recortada na caixa delimitadora do maior contorno externo (com retorno à imagem inteira se o contorno for menor que 20\% da largura ou altura). O recorte recebe bordas pretas até ficar quadrado, preservando a proporção, e é redimensionado para $224\times224$ (Fig.~\ref{fig:pre}). Por fim, grupos inteiros de cada classe são sorteados (semente 42) para as partições de treino, validação e teste na proporção 70/15/15 (Tabela~\ref{tab:split}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_preprocess.pdf}
+\caption{Exemplos do conjunto original (acima), com resoluções variadas, e o resultado do recorte do crânio e da padronização em $224\times224$ (abaixo).}
+\label{fig:pre}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Partições após deduplicação (divisão por grupos)}
+\label{tab:split}
+\begin{tabular}{lrrr}
+\toprule
+Partição & Sem tumor & Tumor & Total \\
+\midrule
+Treino & 61 & 99 & 160 \\
+Validação & 13 & 21 & 34 \\
+Teste & 13 & 21 & 34 \\
+\midrule
+Total & 87 & 141 & 228 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Modelos}
+
+Foram comparadas duas arquiteturas com saída de um único \textit{logit}:
+\begin{itemize}
+\item \textbf{ResNet-18}~\cite{he2016resnet} pré-treinada na ImageNet, com a camada final substituída por \textit{dropout} (0,3) e uma camada linear (11,2~M parâmetros);
+\item \textbf{CNN simples}, treinada do zero: quatro blocos de duas convoluções $3\times3$ com \textit{batch normalization}, ReLU e \textit{max pooling} (32 a 256 canais), seguidos de \textit{pooling} médio global e camada linear (1,2~M parâmetros).
+\end{itemize}
+
+\subsection{Treinamento}
+
+Todas as execuções usam aumento de dados (recorte aleatório redimensionado com escala de 0,85 a 1, espelhamento horizontal, rotação de até $15^\circ$ e variação de brilho e contraste de 20\%), normalização pelas estatísticas da ImageNet, perda \textit{BCEWithLogits} com \texttt{pos\_weight} $= n_{\text{sem}}/n_{\text{tumor}}$ para compensar o desbalanceamento, otimizador AdamW~\cite{loshchilov2019adamw}, lote de 32, taxa de aprendizado $10^{-4}$ e precisão mista bf16. Guarda-se o modelo com a menor perda de validação, com \textit{early stopping} após 15 épocas sem melhora.
+
+Partindo do primeiro experimento (\texttt{baseline}), três configurações acrescentam, cada uma, uma mudança à anterior (Tabela~\ref{tab:configs}). A motivação veio da análise do \texttt{baseline}: o decaimento cosseno~\cite{loshchilov2017sgdr} foi dimensionado para 60 épocas, mas o \textit{early stopping} encerrou o treino na época 23, de modo que a taxa de aprendizado ainda estava em 96\% do valor inicial na melhor época; além disso, $10^{-4}$ é um \textit{weight decay} fraco para o AdamW, e treinar a rede inteira desde o início permite que a cabeça aleatória propague gradientes ruidosos para as camadas pré-treinadas.
+
+\begin{table}[t]
+\centering
+\caption{Configurações de treino comparadas}
+\label{tab:configs}
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lccccc}
+\toprule
+Configuração & Épocas & \textit{Warmup} & \textit{W. decay} & Só cabeça & LR cabeça \\
+\midrule
+\texttt{baseline} & 60 & 0 & $10^{-4}$ & 0 & $10^{-4}$ \\
+\texttt{schedule} & 25 & 2 & $10^{-4}$ & 0 & $10^{-4}$ \\
+\texttt{schedule\_wd} & 25 & 2 & $5\cdot10^{-2}$ & 0 & $10^{-4}$ \\
+\texttt{schedule\_wd\_freeze} & 25 & 2 & $5\cdot10^{-2}$ & 3 & $10^{-3}$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Protocolo de avaliação}
+
+As configurações são comparadas por validação cruzada usando apenas as 194 imagens de treino e validação; o teste permanece intocado. Para cada semente (42, 43 e 44), as imagens são divididas em 5 \textit{folds} com \texttt{StratifiedGroupKFold}~\cite{pedregosa2011sklearn}, preservando a proporção das classes e mantendo cada grupo de quase-duplicatas em um único \textit{fold}. Em cada \textit{fold}, o modelo treina em quatro partes, com uma validação interna por grupos (15\%) para o \textit{early stopping}, e é avaliado na quinta. São 15 execuções por configuração e 60 no total, com as mesmas sementes e \textit{folds} para todas, o que permite comparações pareadas. O critério de escolha foi fixado antes dos experimentos: maior AUC ROC média.
+
+Também foi testado um limiar de decisão escolhido na validação interna (o maior que mantém \textit{recall} $\ge0{,}95$), além do limiar fixo de 0,5. A configuração vencedora e o \texttt{baseline} são então retreinados na divisão original e avaliados uma única vez no teste, com intervalos de confiança de 95\% obtidos por 2000 reamostragens \textit{bootstrap}~\cite{efron1993bootstrap}. As métricas são acurácia, precisão, \textit{recall} (sensibilidade), especificidade, F1 e AUC ROC.
+
+\section{Resultados}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{../results/final/test_comparison.png}
+\caption{Matrizes de confusão e curvas ROC no conjunto de teste, nunca usado em treino, seleção de modelo ou escolha de limiar.}
+\label{fig:test}
+\end{figure*}
+
+\subsection{ResNet-18 versus CNN simples}
+
+No primeiro experimento (divisão única, configuração \texttt{baseline}), a transferência de aprendizado foi decisiva (Tabela~\ref{tab:arch}). A CNN treinada do zero classificou quase metade das imagens saudáveis como tumor (especificidade 0,538) e obteve AUC de apenas 0,733, enquanto a ResNet-18 pré-treinada errou três das 34 imagens de teste.
+
+\begin{table}[t]
+\centering
+\caption{Teste (34 imagens): ResNet-18 pré-treinada vs.\ CNN do zero (IC 95\%)}
+\label{tab:arch}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+Métrica & ResNet-18 & CNN simples \\
+\midrule
+Acurácia & \textbf{0,912} (0,79--1,00) & 0,765 (0,62--0,91) \\
+Precisão & \textbf{0,909} (0,76--1,00) & 0,760 (0,58--0,92) \\
+\textit{Recall} & \textbf{0,952} (0,84--1,00) & 0,905 (0,76--1,00) \\
+Especificidade & \textbf{0,846} (0,63--1,00) & 0,538 (0,25--0,80) \\
+F1 & \textbf{0,930} (0,84--1,00) & 0,826 (0,68--0,93) \\
+AUC ROC & \textbf{0,971} (0,90--1,00) & 0,733 (0,51--0,92) \\
+VN / FP / FN / VP & 11 / 2 / 1 / 20 & 7 / 6 / 2 / 19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Validação cruzada das configurações}
+
+A Tabela~\ref{tab:cv} e a Fig.~\ref{fig:cv} mostram a média e o desvio padrão das 15 execuções de cada configuração. A melhor, \texttt{schedule\_wd}, atinge AUC de $0{,}923\pm0{,}051$, apenas $+0{,}005$ acima do \texttt{baseline}, com 9 vitórias, 1 empate e 5 derrotas na comparação pareada. Ajustar o cosseno à duração real do treino e aumentar o \textit{weight decay} são escolhas sensatas, mas mudam pouco o modelo. Congelar o \textit{backbone} nas três primeiras épocas piorou levemente a AUC ($-0{,}011$) e quase dobrou a dispersão entre \textit{folds}. Cada execução levou de 14 a 17~s; as 60 execuções levaram cerca de 7~min com as quatro configurações em paralelo na mesma GPU, e uma segunda rodada completa reproduziu todos os números.
+
+\begin{table}[t]
+\centering
+\caption{Validação cruzada por grupos (5 \textit{folds} $\times$ 3 sementes, limiar 0,5)}
+\label{tab:cv}
+\setlength{\tabcolsep}{2.2pt}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lcccc}
+\toprule
+Config. & AUC ROC & Acurácia & F1 & Especif. \\
+\midrule
+\texttt{baseline} & $0{,}917\pm0{,}054$ & $0{,}840\pm0{,}045$ & $0{,}870\pm0{,}039$ & $0{,}796\pm0{,}118$ \\
+\texttt{schedule} & $0{,}919\pm0{,}051$ & $0{,}852\pm0{,}048$ & $0{,}882\pm0{,}037$ & $0{,}779\pm0{,}120$ \\
+\texttt{sched.\_wd} & $\mathbf{0{,}923}\pm0{,}051$ & $0{,}853\pm0{,}051$ & $0{,}883\pm0{,}040$ & $0{,}787\pm0{,}126$ \\
+\texttt{sched.\_wd\_fr.} & $0{,}906\pm0{,}091$ & $0{,}844\pm0{,}070$ & $0{,}876\pm0{,}061$ & $0{,}756\pm0{,}122$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+
+
+O limiar escolhido na validação interna não compensou: no \texttt{baseline}, elevou o \textit{recall} de 0,870 para 0,912, mas reduziu a especificidade de 0,796 para $0{,}670\pm0{,}262$. Com cerca de 23 imagens em cada validação interna, o limiar oscila muito entre \textit{folds}, e por isso o limiar fixo de 0,5 foi mantido. As curvas ROC agregadas das predições fora do \textit{fold} (Fig.~\ref{fig:roc}) confirmam a ordem das configurações, todas entre 0,909 e 0,918.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\columnwidth]{../results/cv/cv_roc.png}
+\caption{Curvas ROC agregadas das predições fora do \textit{fold} (194 imagens $\times$ 3 sementes).}
+\label{fig:roc}
+\end{figure}
+
+\subsection{Avaliação final no conjunto de teste}
+
+Retreinada na divisão original, a configuração \texttt{schedule\_wd} atingiu a menor perda de validação na época 11 de 25 e errou apenas uma das 34 imagens de teste (Tabela~\ref{tab:test} e Fig.~\ref{fig:test}), um tumor que o \texttt{baseline} também não detectou. A diferença entre as duas são as duas imagens saudáveis que o \texttt{baseline} marcou como tumor. Os limiares escolhidos na validação (0,646 e 0,422) não alteraram nenhuma predição de teste. A Fig.~\ref{fig:curves} mostra as curvas de treino: a perda de treino tende a zero enquanto a de validação estabiliza a partir da época 11, sinal de sobreajuste contido pela seleção do melhor \textit{checkpoint}.
+
+\begin{table}[t]
+\centering
+\caption{Teste (34 imagens): \texttt{baseline} vs.\ \texttt{schedule\_wd} (IC 95\%)}
+\label{tab:test}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+Métrica & \texttt{baseline} & \texttt{schedule\_wd} \\
+\midrule
+Acurácia & 0,912 (0,79--1,00) & \textbf{0,971} (0,91--1,00) \\
+Precisão & 0,909 (0,76--1,00) & \textbf{1,000} (1,00--1,00) \\
+\textit{Recall} & 0,952 (0,84--1,00) & 0,952 (0,84--1,00) \\
+Especificidade & 0,846 (0,63--1,00) & \textbf{1,000} (1,00--1,00) \\
+F1 & 0,930 (0,84--1,00) & \textbf{0,976} (0,91--1,00) \\
+AUC ROC & 0,971 (0,90--1,00) & \textbf{0,989} (0,95--1,00) \\
+VN / FP / FN / VP & 11 / 2 / 1 / 20 & 13 / 0 / 1 / 20 \\
+Melhor época / total & 8 / 23 & 11 / 25 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{../results/final/schedule_wd/training_curves.png}
+\caption{Curvas de perda, acurácia e AUC do treino final da configuração \texttt{schedule\_wd}.}
+\label{fig:curves}
+\end{figure}
+
+\section{Discussão}
+
+O resultado no teste ($0{,}971$ de acurácia) é superior ao da validação cruzada ($0{,}85$), mas a diferença entre \texttt{baseline} e \texttt{schedule\_wd} no teste são apenas duas imagens e está dentro dos intervalos de confiança. A estimativa mais confiável do desempenho esperado é a da validação cruzada, que média 15 avaliações de cerca de 39 imagens cada: AUC próxima de 0,92 e acurácia próxima de 0,85 para qualquer uma das três primeiras configurações. A deduplicação foi essencial para essa honestidade: sem ela, 25 pares de imagens idênticas e outras quase-duplicatas poderiam estar simultaneamente no treino e no teste.
+
+As principais limitações são o tamanho do conjunto (228 imagens únicas), a ausência de identificação de pacientes, que impede garantir que fatias do mesmo paciente fiquem na mesma partição, e a mistura de sequências e protocolos de aquisição sem metadados. A parte de segmentação do repositório ainda é preliminar: o \texttt{kmeans.py} agrupa os pixels por cor com K-means~\cite{macqueen1967kmeans} e gera uma máscara por agrupamento, e o \texttt{eraser.py} oferece um pincel interativo para limpar as máscaras; com essas ferramentas foram criados três pares imagem/máscara, insuficientes para treinar um modelo de segmentação.
+
+\section{Conclusão}
+
+Foi desenvolvido um \textit{pipeline} reprodutível de detecção de tumores cerebrais em RM que trata explicitamente duplicatas e vazamento de dados e compara configurações por validação cruzada por grupos antes de tocar o conjunto de teste. A transferência de aprendizado com a ResNet-18 foi o fator determinante (AUC de teste de 0,971 contra 0,733 da CNN treinada do zero), enquanto os ajustes de agendamento e regularização ficaram dentro do ruído estatístico. Como trabalhos futuros, propõem-se ampliar a base com conjuntos maiores e identificados por paciente, calibrar as probabilidades do modelo e produzir máscaras suficientes para treinar uma rede de segmentação, como a U-Net.
+
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{9}
+
+\bibitem{kapoor2023leakage}
+S.~Kapoor and A.~Narayanan, ``Leakage and the reproducibility crisis in machine-learning-based science,'' \emph{Patterns}, vol.~4, no.~9, p.~100804, 2023.
+
+\bibitem{deng2009imagenet}
+J.~Deng, W.~Dong, R.~Socher, L.-J. Li, K.~Li, and L.~Fei-Fei, ``ImageNet: A large-scale hierarchical image database,'' in \emph{Proc. IEEE CVPR}, 2009, pp.~248--255.
+
+\bibitem{he2016resnet}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Deep residual learning for image recognition,'' in \emph{Proc. IEEE CVPR}, 2016, pp.~770--778.
+
+\bibitem{kaggle2019brain}
+N.~Chakrabarty, ``Brain MRI images for brain tumor detection,'' Kaggle, 2019. [Online]. Available: \url{https://www.kaggle.com/datasets/navoneel/brain-mri-images-for-brain-tumor-detection}
+
+\bibitem{loshchilov2019adamw}
+I.~Loshchilov and F.~Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. ICLR}, 2019.
+
+\bibitem{loshchilov2017sgdr}
+I.~Loshchilov and F.~Hutter, ``SGDR: Stochastic gradient descent with warm restarts,'' in \emph{Proc. ICLR}, 2017.
+
+\bibitem{pedregosa2011sklearn}
+F.~Pedregosa \emph{et al.}, ``Scikit-learn: Machine learning in Python,'' \emph{J. Mach. Learn. Res.}, vol.~12, pp.~2825--2830, 2011.
+
+\bibitem{efron1993bootstrap}
+B.~Efron and R.~J. Tibshirani, \emph{An Introduction to the Bootstrap}. New York, NY, USA: Chapman \& Hall, 1993.
+
+\bibitem{macqueen1967kmeans}
+J.~MacQueen, ``Some methods for classification and analysis of multivariate observations,'' in \emph{Proc. 5th Berkeley Symp. Math. Statist. Probab.}, 1967, pp.~281--297.
+
+\end{thebibliography}
+
+\end{document}
