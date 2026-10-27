@@ -32,7 +32,7 @@ Matrícula: 251008114}
 \maketitle
 
 \begin{abstract}
-Este trabalho classifica imagens de ressonância magnética (RM) cerebral em ``com tumor'' e ``sem tumor'' no conjunto \textit{Brain MRI Images for Brain Tumor Detection} (253 imagens), com deduplicação e divisão por grupos de quase-duplicatas. Para isolar o efeito do pré-treino, uma ResNet-18 com pesos do ImageNet é comparada à mesma rede com inicialização aleatória e mesmo treinamento, e quatro configurações de treino são comparadas por validação cruzada estratificada por grupos (5 \textit{folds} $\times$ 3 sementes). O pré-treino elevou a AUC média de $0{,}744$ para $0{,}917$ (diferença pareada de $0{,}173$, IC 95\% corrigido $[0{,}047;\,0{,}299]$), e a rede pré-treinada venceu as 15 execuções. Entre as configurações, não foi detectado ganho consistente de AUC. No teste (34 imagens), a ResNet-18 pré-treinada errou 3 imagens e a aleatória, 9 (McNemar exato, $p=0{,}031$). Sem identificação de paciente nem validação externa, os resultados são exploratórios e não indicam uso clínico.
+Este trabalho classifica imagens de ressonância magnética (RM) cerebral em ``com tumor'' e ``sem tumor'' no conjunto \textit{Brain MRI Images for Brain Tumor Detection} (253 imagens), com deduplicação e divisão por grupos de quase-duplicatas. Para isolar o efeito do pré-treino, uma ResNet-18 com pesos do ImageNet é comparada à mesma rede com inicialização aleatória e mesmo treinamento, e quatro configurações de treino são comparadas por validação cruzada estratificada por grupos (5 \textit{folds} $\times$ 3 sementes). O pré-treino elevou a AUC média de $0{,}744$ para $0{,}917$ (diferença pareada de $0{,}173$, IC 95\% corrigido $[0{,}047;\,0{,}299]$), e a rede pré-treinada venceu as 15 execuções. Entre as configurações, não foi detectado ganho consistente de AUC. Na avaliação exploratória do conjunto de teste (34 imagens), a ResNet-18 pré-treinada errou 3 imagens e a aleatória, 9 (McNemar exato, $p=0{,}031$). Sem identificação de paciente nem validação externa, os resultados são exploratórios e não indicam uso clínico.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -151,7 +151,7 @@ Configuração & AUC & Sensibilidade & Especificidade & Sensibilidade & Especifi
 
 \begin{table*}[t]
 \centering
-\caption{Teste (34 imagens: 21 com tumor, 13 sem tumor). Proporções com IC 95\% de Wilson; AUC com IC 95\% por \textit{bootstrap}.}
+\caption{Teste com limiar fixo de 0,5 (21 imagens com tumor, 13 sem tumor). IC 95\%: Wilson nas proporções; \textit{bootstrap} na AUC.}
 \label{tab:test}
 \footnotesize
 \setlength{\tabcolsep}{5pt}
@@ -174,7 +174,7 @@ VN / FP / FN / VP & 0 / 13 / 0 / 21 & 11 / 2 / 1 / 20 & 7 / 6 / 3 / 18 & 7 / 6 /
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.72\textwidth]{fig_test.pdf}
-\caption{Matrizes de confusão e curvas ROC no conjunto de teste, nunca usado em treino, seleção de modelo ou escolha de limiar.}
+\caption{Avaliação exploratória no teste, fora do treino e da seleção de modelo e de limiar: matrizes de confusão (limiar fixo de 0,5) e curvas ROC.}
 \label{fig:test}
 \end{figure*}
 
@@ -182,7 +182,7 @@ VN / FP / FN / VP & 0 / 13 / 0 / 21 & 11 / 2 / 1 / 20 & 7 / 6 / 3 / 18 & 7 / 6 /
 
 As configurações foram comparadas por validação cruzada usando só as 194 imagens de treino e validação. Para cada semente (42, 43 e 44), as imagens foram divididas em 5 \textit{folds} com \texttt{StratifiedGroupKFold}~\cite{pedregosa2011sklearn}, que preserva a proporção das classes e mantém cada grupo em um único \textit{fold}. Em cada \textit{fold}, o modelo treina em quatro partes, com validação interna por grupos (15\%, 23 a 25 imagens) para a parada antecipada e o limiar, e é avaliado na quinta (36 a 41 imagens). As 15 execuções usam as mesmas sementes e \textit{folds} em todas as configurações; as diferenças pareadas de AUC em relação ao \texttt{baseline} recebem o IC 95\% do teste $t$ corrigido de Nadeau e Bengio~\cite{nadeau2003inference}, tratado como exploratório: $\bar d \pm t_{0{,}975;\,14}\,s\sqrt{1/15 + n_2/n_1}$, com média $\bar d$ e desvio $s$ das 15 diferenças e $n_2/n_1 = 38{,}8/155{,}2 = 0{,}25$, razão entre as médias de imagens avaliadas e de ajuste (treino e validação interna) por \textit{fold}.
 
-O \texttt{baseline}, a configuração vencedora e o controle foram retreinados na divisão original e avaliados uma única vez no teste. As proporções recebem IC 95\% de Wilson~\cite{brown2001interval}, que permanece informativo quando não há erros de um tipo, e a AUC, IC por \textit{bootstrap} (2.000 reamostragens)~\cite{efron1993bootstrap}; os pares de modelos são comparados pelo teste exato de McNemar sobre as imagens em que discordam. O teste contém 34 imagens distribuídas em 32 grupos de \textit{hash}; esses grupos não permitem determinar a dependência entre imagens do mesmo paciente. Hiperparâmetros, épocas, limiares e a configuração foram escolhidos sem acesso ao teste, mas ele foi consultado em três etapas: experimento inicial (ResNet-18 pré-treinada e CNN simples), \texttt{baseline} e configuração vencedora e, por último, controle aleatório, acrescentado com os resultados anteriores já conhecidos; as comparações no teste são, portanto, exploratórias. Código, divisão e predições estão em \url{https://github.com/1emes/MRI-segmentation}.
+O \texttt{baseline}, a configuração vencedora e o controle foram retreinados na divisão original e avaliados uma única vez no teste. As proporções recebem IC 95\% de Wilson~\cite{brown2001interval}, que permanece informativo quando não há erros de um tipo, e a AUC, IC por \textit{bootstrap} (2.000 reamostragens)~\cite{efron1993bootstrap}; os pares de modelos são comparados pelo teste exato de McNemar sobre as imagens em que discordam. O teste contém 34 imagens distribuídas em 32 grupos de \textit{hash}; esses grupos não permitem determinar a dependência entre imagens do mesmo paciente. A seleção dos hiperparâmetros, da configuração, das épocas e dos limiares baseou-se só nos dados de treino e validação. O teste foi consultado em três etapas: experimento inicial (ResNet-18 pré-treinada e CNN simples), \texttt{baseline} e configuração vencedora e, por último, controle aleatório, acrescentado com os resultados anteriores já conhecidos; por isso, suas comparações são exploratórias. Código, divisão e predições estão em \url{https://github.com/1emes/MRI-segmentation}.
 
 
 
