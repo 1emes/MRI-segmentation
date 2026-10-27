@@ -16,12 +16,14 @@ Dataset: [Brain MRI Images for Brain Tumor Detection](https://www.kaggle.com/dat
   repeated k-fold t-test).
 - **Pretraining control.** The same ResNet-18 and training setup from random initialization
   (`baseline_scratch`) drops to a mean AUC of **0.74 ± 0.08**: −0.173, 95% CI [−0.299, −0.047], and
-  the pretrained model wins all 15 runs. On the test split it misses 9 images against 3
-  (exact McNemar p = 0.031).
-- **Test split (confirmation).** On the 34 held-out images, `schedule_wd` misses 1 image
-  (accuracy 0.971, F1 0.976, AUC 0.989) against 3 for the baseline (0.912 / 0.930 / 0.971).
-  The two models disagree on 2 images (exact McNemar p = 0.5), so the cross-validation is the
-  number to trust.
+  the pretrained model wins all 15 runs. In the exploratory test evaluation it misses 9 images
+  against 3 (exact McNemar p = 0.031).
+- **Test split (exploratory).** On the 34 held-out images, with the fixed 0.5 threshold,
+  `schedule_wd` misses 1 image (accuracy 0.971, F1 0.976, AUC 0.989) against 3 for the baseline
+  (0.912 / 0.930 / 0.971). The two models disagree on 2 images (exact McNemar p = 0.5), which is no
+  evidence of a difference; the cross-validation summarizes performance over many partitions, though it
+  shares the limits of the dataset and of the grouping. The test split was consulted in three stages
+  (see [Test split](#test-split-exploratory)), so its comparisons are exploratory.
 - Picking the decision threshold on the validation split (recall ≥ 0.95) did not help: it buys a
   little recall at the cost of a large, unstable drop in specificity. The fixed 0.5 threshold is kept.
 
@@ -96,14 +98,15 @@ initialization instead of the ImageNet weights.
 | `schedule_wd_freeze` | 25 | 2 | 5e-2 | 3 | 1e-3 |
 | `baseline_scratch` (control, random init) | 60 | 0 | 1e-4 | 0 | 1e-4 |
 
-Why: in the first experiment the cosine was sized for 60 epochs but early stopping ended the run at
-epoch 23, so the learning rate was still at 96% of its initial value at the best epoch; 1e-4 is a weak
+Why: in the first experiment the cosine was sized for 60 epochs; early stopping ended the run at
+epoch 23, but the best model came from epoch 8, when the learning rate was still about 97% of its
+initial value (`results/final/baseline/history.csv`); 1e-4 is a weak
 weight decay for AdamW; and training the whole network from the first step lets the random head push
 noisy gradients into the pretrained features.
 
 ### 4. Cross-validation (`cv.py`)
 
-Only the 194 train + val images are used; the test split stays untouched until the end.
+Only the 194 train + val images are used; the test split plays no part in training or selection.
 
 - For each seed (42, 43, 44) the images are split into 5 folds with `StratifiedGroupKFold`, so
   near-duplicate groups never cross folds and every fold keeps the class balance.
@@ -119,8 +122,14 @@ seed (`results/cv/<config>/oof.csv`), which feeds the pooled confusion matrices 
 
 ### 5. Final model and test (`train.py`, `evaluate.py`, `compare.py`)
 
-The best configuration and the baseline are retrained on the original train/val split and evaluated
-**once** on the 34 test images, with both thresholds. The best configuration saves a checkpoint per epoch.
+The best configuration and the baseline are retrained on the original train/val split and each is
+evaluated once on the 34 test images, with both thresholds. The best configuration saves a checkpoint
+per epoch.
+
+Hyperparameters, configuration, epochs and thresholds were selected on the training and validation data
+only, but the test split was consulted in three stages: the first experiment (ResNet-18 and SimpleCNN),
+the baseline and the best configuration, and last the random-initialization control, added when the
+earlier test results were already known. The test comparisons are therefore exploratory.
 
 ### 6. Evaluation metrics (`evaluate.py`)
 
@@ -211,9 +220,12 @@ The pooled AUCs (0.909-0.918) sit slightly below the per-fold means of the table
 the scores of 15 different models, whose probabilities are not calibrated on the same scale. The ranking
 is the same: `schedule_wd` first, `schedule_wd_freeze` last, all within 0.01.
 
-### Test split (confirmation)
+### Test split (exploratory)
 
-34 images (21 tumor, 13 no tumor), never used for training, model selection or threshold choice.
+34 images (21 tumor, 13 no tumor), never used for training, model selection or threshold choice, but
+consulted in three stages (see [step 5](#5-final-model-and-test-trainpy-evaluatepy-comparepy)), so the
+comparisons below are exploratory. Classification metrics use the fixed 0.5 threshold; the ROC AUC uses
+the scores over all thresholds.
 
 | | baseline | schedule_wd |
 |---|---|---|
@@ -241,23 +253,24 @@ Per-run figures: `results/final/<config>/confusion_matrix*.png` and `roc_curve*.
 
 ### Discussion
 
-- **The training changes are within noise.** Sizing the cosine to the run and raising the weight
-  decay move the mean AUC by +0.002 and +0.005, with a paired standard deviation of ~0.03 and a near
-  even split of wins and losses. They are sensible defaults, but they do not change the model much.
+- **No consistent AUC gain from the training changes.** Sizing the cosine to the run and raising the
+  weight decay move the mean AUC by +0.002 and +0.005, with a near even split of wins and losses. This
+  does not show equivalence: the corrected 95% intervals still allow differences of about ±0.04.
 - **Freezing the backbone hurt slightly** (−0.011 AUC) and almost doubled the spread across folds:
   with 3 head-only epochs out of 25 there is less time left to adapt the whole network.
 - **The validation-chosen threshold is unstable.** With ~23 images in each inner validation split the
   threshold jumps from fold to fold; it lifts recall a little (0.87 → 0.91 on the baseline) and costs
   specificity a lot (0.80 → 0.67, ±0.26). A threshold policy would need a larger validation set.
-- **The test gain of `schedule_wd` is mostly luck of the draw.** It gets right the 2 healthy scans the
-  baseline flagged as tumor, and both miss the same tumor. The cross-validation, which averages
-  15 evaluations of ~39 images, puts any of the first three configurations around 0.92 AUC and
-  0.85 accuracy, below the 0.97 seen on the 34 test images.
+- **The test gain of `schedule_wd` comes down to 2 images** (exact McNemar p = 0.5). It gets right the
+  2 healthy scans the baseline flagged as tumor, and both miss the same tumor. The cross-validation,
+  which averages 15 evaluations of ~39 images, puts any of the first three configurations around
+  0.92 AUC and 0.85 accuracy, below the 0.97 seen on the 34 test images.
 - Retraining the baseline reproduces the first experiment exactly (best epoch 8, same metrics).
 
 ### First experiment: ResNet-18 vs SimpleCNN
 
-Single train/val/test split, `baseline` training configuration, test split (34 images):
+Single train/val/test split, `baseline` training configuration, test split (34 images, exploratory;
+fixed 0.5 threshold, 95% bootstrap intervals):
 
 | Metric | ResNet-18 (pretrained) | SimpleCNN (from scratch) |
 |---|---|---|
@@ -288,7 +301,8 @@ folds (run on 2026-10-26, same Colab A100, 0.35 compute units). Cross-validation
 | baseline (ImageNet) | 0.917 ± 0.054 | 0.870 ± 0.073 | 0.796 ± 0.118 | - |
 | baseline_scratch (random) | 0.744 ± 0.082 | 0.702 ± 0.101 | 0.633 ± 0.162 | −0.173 [−0.299, −0.047] (0 / 0 / 15) |
 
-Test split (34 images), 95% Wilson intervals for proportions and bootstrap interval for the AUC:
+Test split (34 images, exploratory; classification metrics with the fixed 0.5 threshold), 95% Wilson
+intervals for proportions and bootstrap interval for the AUC:
 
 | Metric | baseline (ImageNet) | baseline_scratch (random) |
 |---|---|---|
@@ -299,9 +313,11 @@ Test split (34 images), 95% Wilson intervals for proportions and bootstrap inter
 | TN / FP / FN / TP | 11 / 2 / 1 / 20 | 7 / 6 / 3 / 18 |
 
 The two models disagree on 6 test images, all right for the pretrained one (exact McNemar p = 0.031);
-`baseline_scratch` and SimpleCNN are indistinguishable (p = 1.0). The control reuses hyperparameters
-chosen for fine-tuning, and in 4 of the 15 folds its best epoch was past 40, so a search of its own could
-narrow the gap. `python paper/analysis.py` recomputes every interval and test above from `results/`.
+`baseline_scratch` and SimpleCNN have AUCs of 0.766 and 0.733, and no difference in their error
+proportions is detected (exact McNemar p = 1.0), which does not show they are equivalent. The control
+reuses hyperparameters chosen for fine-tuning, and in 4 of the 15 folds its best epoch was past 40, so
+a search of its own could narrow the gap.
+`python paper/analysis.py` recomputes every interval and test above from `results/`.
 
 ## Checkpoints
 
