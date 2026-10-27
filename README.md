@@ -229,18 +229,21 @@ the scores over all thresholds.
 
 | | baseline | schedule_wd |
 |---|---|---|
-| Accuracy | 0.912 (0.794-1.000) | **0.971** (0.912-1.000) |
-| Precision | 0.909 (0.762-1.000) | **1.000** (1.000-1.000) |
-| Recall | 0.952 (0.842-1.000) | 0.952 (0.842-1.000) |
-| Specificity | 0.846 (0.625-1.000) | **1.000** (1.000-1.000) |
-| F1 | 0.930 (0.837-1.000) | **0.976** (0.914-1.000) |
-| ROC AUC | 0.971 (0.902-1.000) | **0.989** (0.953-1.000) |
+| Accuracy | 0.912 (0.77-0.97) | **0.971** (0.85-0.99) |
+| Precision | 0.909 (0.72-0.97) | **1.000** (0.84-1.00) |
+| Recall | 0.952 (0.77-0.99) | 0.952 (0.77-0.99) |
+| Specificity | 0.846 (0.58-0.96) | **1.000** (0.77-1.00) |
+| F1 | 0.930 | **0.976** |
+| ROC AUC | 0.971 (0.90-1.00) | **0.989** (0.95-1.00) |
 | TN / FP / FN / TP | 11 / 2 / 1 / 20 | 13 / 0 / 1 / 20 |
 | Best epoch / epochs run | 8 / 23 | 11 / 25 |
 | Threshold chosen on val (recall ≥ 0.95) | 0.646 | 0.422 |
 
-95% bootstrap intervals in parentheses. With the validation-chosen thresholds every test prediction
-stays the same (same confusion matrices), so the table holds for both thresholds.
+95% Wilson intervals for the proportions (accuracy, precision, recall, specificity), which stay
+informative when there is no error of one kind, and 95% bootstrap interval (2,000 resamples) for the
+ROC AUC, as in the paper; F1 is not a binomial proportion and has no interval. With the
+validation-chosen thresholds every test prediction stays the same (same confusion matrices), so the
+table holds for both thresholds.
 
 ![Test comparison](results/final/test_comparison.png)
 
